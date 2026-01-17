@@ -17,7 +17,15 @@ function cn(...classes: Array<string | undefined | false>) {
 
 type StaggerFrom = 'first' | 'last' | 'center' | 'random' | number;
 
-export interface RotatingTextProps extends React.HTMLAttributes<HTMLSpanElement> {
+export interface RotatingTextHandle {
+  next: () => void;
+  previous: () => void;
+  jumpTo: (index: number) => void;
+  reset: () => void;
+}
+
+export interface RotatingTextProps
+  extends Omit<React.HTMLAttributes<HTMLSpanElement>, 'ref'> {
   texts: string[];
   transition?: any;
   initial?: any;
@@ -37,7 +45,7 @@ export interface RotatingTextProps extends React.HTMLAttributes<HTMLSpanElement>
   elementLevelClassName?: string;
 }
 
-const RotatingText = forwardRef<HTMLSpanElement, RotatingTextProps>((props, ref) => {
+const RotatingText = forwardRef<RotatingTextHandle, RotatingTextProps>((props, ref) => {
   const {
     texts,
     transition = { type: 'spring', damping: 25, stiffness: 300 },
