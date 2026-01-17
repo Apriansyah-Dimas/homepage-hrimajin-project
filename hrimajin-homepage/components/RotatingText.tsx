@@ -17,6 +17,8 @@ function cn(...classes: Array<string | undefined | false>) {
 
 type StaggerFrom = 'first' | 'last' | 'center' | 'random' | number;
 
+type MotionSpanProps = Omit<React.ComponentProps<typeof motion.span>, 'children' | 'ref'>;
+
 export interface RotatingTextHandle {
   next: () => void;
   previous: () => void;
@@ -25,7 +27,7 @@ export interface RotatingTextHandle {
 }
 
 export interface RotatingTextProps
-  extends Omit<React.HTMLAttributes<HTMLSpanElement>, 'ref'> {
+  extends MotionSpanProps {
   texts: string[];
   transition?: any;
   initial?: any;
