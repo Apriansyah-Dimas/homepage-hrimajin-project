@@ -34,3 +34,23 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Supabase setup (cards)
+
+Environment variables (`.env.local` and Vercel Project Settings):
+```
+SUPABASE_URL=...
+SUPABASE_SERVICE_ROLE_KEY=...
+NEXT_PUBLIC_ADMIN_PASSWORD=admin123
+```
+
+Database table `cards` (Postgres):
+- `id` uuid (primary key, default `gen_random_uuid()`)
+- `title` text
+- `link` text
+- `image_url` text
+- `created_at` timestamptz default now()
+
+Storage:
+- Create bucket `cards` with public read.
+- Route `/api/cards` uploads to `cards/{uuid}.ext` using service role key.

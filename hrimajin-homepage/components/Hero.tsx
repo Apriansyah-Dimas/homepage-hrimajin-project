@@ -57,18 +57,7 @@ export default function Hero() {
   const virtualScroll = useMotionValue(0);
   const [progressValue, setProgressValue] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
-  const [cards, setCards] = useState<CardData[]>(() => {
-    if (typeof window === 'undefined') return DEFAULT_CARDS;
-    try {
-      const stored = window.localStorage.getItem('hr_cards');
-      const parsed = stored ? (JSON.parse(stored) as CardData[]) : null;
-      return parsed && Array.isArray(parsed) && parsed.length > 0
-        ? parsed
-        : DEFAULT_CARDS;
-    } catch (error) {
-      return DEFAULT_CARDS;
-    }
-  });
+  const [cards, setCards] = useState<CardData[]>(DEFAULT_CARDS);
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     if (typeof window === 'undefined') return false;
     try {
@@ -93,14 +82,24 @@ export default function Hero() {
   });
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    const controller = new AbortController();
+
+    const fetchCards = async () => {
       try {
-        window.localStorage.setItem('hr_cards', JSON.stringify(cards));
+        const response = await fetch('/api/cards', { signal: controller.signal });
+        if (!response.ok) throw new Error('Failed to load cards');
+        const json = await response.json();
+        if (Array.isArray(json.cards) && json.cards.length > 0) {
+          setCards(json.cards as CardData[]);
+        }
       } catch (error) {
-        // silently ignore quota/storage errors
+        // ignore fetch errors and keep defaults
       }
-    }
-  }, [cards]);
+    };
+
+    fetchCards();
+    return () => controller.abort();
+  }, []);
 
   useEffect(() => {
     if (isMobile) {
@@ -209,9 +208,30 @@ export default function Hero() {
   }, [cards, isAuthenticated, isEditMode]);
 
   const handleSubmitNewCard = async (payload: Omit<CardData, 'id'>) => {
-    const id = `${Date.now()}`;
-    setCards((prev) => [...prev, { ...payload, id }]);
-    setIsAddModalOpen(false);
+    try {
+      const response = await fetch('/api/cards', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: payload.title,
+          link: payload.link,
+          imageDataUrl: payload.imageSrc,
+        }),
+      });
+
+      const json = await response.json();
+      if (!response.ok) {
+        throw new Error(json.error || 'Gagal menambah card');
+      }
+
+      const created = json.card as CardData;
+      setCards((prev) => [...prev, created]);
+      setIsAddModalOpen(false);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to add card', error);
+      throw error;
+    }
   };
 
   if (isMobile) {
@@ -652,7 +672,7 @@ function AddCardModal({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (card: Omit<CardData, 'id'>) => void;
+  onSubmit: (card: Omit<CardData, 'id'>) => Promise<void>;
 }) {
   const [title, setTitle] = useState('');
   const [link, setLink] = useState('');
@@ -696,13 +716,13 @@ function AddCardModal({
     setIsSubmitting(true);
     try {
       const dataUrl = await readFileAsDataUrl(imageFile);
-      onSubmit({
+      await onSubmit({
         title: title.trim(),
         link: link.trim(),
         imageSrc: dataUrl,
       });
     } catch (_) {
-      setError('Gagal memproses gambar. Coba lagi.');
+      setError('Gagal menambah card. Coba lagi.');
     } finally {
       setIsSubmitting(false);
     }
