@@ -1,11 +1,22 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export default function Background() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    const media = window.matchMedia('(max-width: 768px)');
+    const update = () => setIsMobile(media.matches);
+    update();
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, []);
+
+  useEffect(() => {
+    if (isMobile) return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -70,13 +81,15 @@ export default function Background() {
       window.removeEventListener('resize', resizeCanvas);
       cancelAnimationFrame(animationFrameId);
     };
-  }, []);
+  }, [isMobile]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="fixed inset-0 w-full h-full pointer-events-none z-0"
-      style={{ opacity: 0.6 }}
-    />
+    !isMobile && (
+      <canvas
+        ref={canvasRef}
+        className="fixed inset-0 w-full h-full pointer-events-none z-0"
+        style={{ opacity: 0.6 }}
+      />
+    )
   );
 }
