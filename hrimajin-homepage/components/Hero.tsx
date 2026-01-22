@@ -37,6 +37,7 @@ export default function Hero() {
   });
   const [isEditMode, setIsEditMode] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingCard, setEditingCard] = useState<CardData | null>(null);
 
   useEffect(() => {
     const media = window.matchMedia('(max-width: 768px)');
@@ -203,6 +204,56 @@ export default function Hero() {
     }
   };
 
+  const handleUpdateCard = async (cardId: string, payload: Omit<CardData, 'id'>) => {
+    try {
+      const response = await fetch('/api/cards', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: cardId,
+          title: payload.title,
+          link: payload.link,
+          imageDataUrl: payload.imageSrc,
+        }),
+      });
+
+      const json = await response.json();
+      if (!response.ok) {
+        throw new Error(json.error || 'Gagal mengubah card');
+      }
+
+      const updated = json.card as CardData;
+      setCards((prev) => prev.map((item) => (item.id === cardId ? updated : item)));
+      setEditingCard(null);
+      setIsAddModalOpen(false);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to update card', error);
+      throw error;
+    }
+  };
+
+  const handleDeleteCard = async (cardId: string) => {
+    try {
+      const response = await fetch('/api/cards', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: cardId }),
+      });
+
+      const json = await response.json();
+      if (!response.ok) {
+        throw new Error(json.error || 'Gagal menghapus card');
+      }
+
+      setCards((prev) => prev.filter((item) => item.id !== cardId));
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to delete card', error);
+      throw error;
+    }
+  };
+
   if (isMobile) {
     return (
       <section
@@ -273,14 +324,30 @@ export default function Hero() {
             cards={cardsWithAddButton}
             isAuthenticated={isAuthenticated}
             isEditMode={isEditMode}
-            onOpenAddModal={() => setIsAddModalOpen(true)}
+            onEditCard={(card) => {
+              setEditingCard(card);
+              setIsAddModalOpen(true);
+            }}
+            onOpenAddModal={() => {
+              setEditingCard(null);
+              setIsAddModalOpen(true);
+            }}
+            onDeleteCard={(card) => handleDeleteCard(card.id)}
           />
         </div>
 
         <AddCardModal
           isOpen={isAddModalOpen}
-          onClose={() => setIsAddModalOpen(false)}
-          onSubmit={handleSubmitNewCard}
+          onClose={() => {
+            setIsAddModalOpen(false);
+            setEditingCard(null);
+          }}
+          onSubmit={
+            editingCard
+              ? (payload) => handleUpdateCard(editingCard.id, payload)
+              : handleSubmitNewCard
+          }
+          initialCard={editingCard}
         />
       </section>
     );
@@ -434,13 +501,21 @@ export default function Hero() {
           }}
         >
           <div className="w-fit mx-auto">
-            <NavigationCardsContent
-              cards={cardsWithAddButton}
-              isAuthenticated={isAuthenticated}
-              isEditMode={isEditMode}
-              onOpenAddModal={() => setIsAddModalOpen(true)}
-            />
-          </div>
+          <NavigationCardsContent
+            cards={cardsWithAddButton}
+            isAuthenticated={isAuthenticated}
+            isEditMode={isEditMode}
+            onEditCard={(card) => {
+              setEditingCard(card);
+              setIsAddModalOpen(true);
+            }}
+            onOpenAddModal={() => {
+              setEditingCard(null);
+              setIsAddModalOpen(true);
+            }}
+            onDeleteCard={(card) => handleDeleteCard(card.id)}
+          />
+        </div>
         </motion.div>
 
         {/* Scroll indicator */}
@@ -486,8 +561,16 @@ export default function Hero() {
 
       <AddCardModal
         isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        onSubmit={handleSubmitNewCard}
+        onClose={() => {
+          setIsAddModalOpen(false);
+          setEditingCard(null);
+        }}
+        onSubmit={
+          editingCard
+            ? (payload) => handleUpdateCard(editingCard.id, payload)
+            : handleSubmitNewCard
+        }
+        initialCard={editingCard}
       />
     </>
   );
@@ -499,11 +582,15 @@ function NavigationCardsContent({
   isAuthenticated,
   isEditMode,
   onOpenAddModal,
+  onEditCard,
+  onDeleteCard,
 }: {
   cards: CardData[];
   isAuthenticated: boolean;
   isEditMode: boolean;
   onOpenAddModal: () => void;
+  onEditCard: (card: CardData) => void;
+  onDeleteCard: (card: CardData) => void;
 }) {
   return (
     <div className="flex flex-col items-center gap-12">
@@ -545,6 +632,9 @@ function NavigationCardsContent({
               link={card.link}
               imageSrc={card.imageSrc}
               index={idx}
+              onEdit={() => onEditCard(card)}
+              onDelete={() => onDeleteCard(card)}
+              isEditable={isAuthenticated && isEditMode}
             />
           ),
         )}
@@ -558,9 +648,12 @@ interface CardProps {
   link: string;
   imageSrc: string;
   index: number;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  isEditable?: boolean;
 }
 
-function Card({ title, link, imageSrc, index }: CardProps) {
+function Card({ title, link, imageSrc, index, onEdit, onDelete, isEditable }: CardProps) {
   const titleText = title;
 
   return (
@@ -571,28 +664,56 @@ function Card({ title, link, imageSrc, index }: CardProps) {
       transition={{ delay: index * 0.1, duration: 0.6 }}
       className="w-full h-full max-w-[360px] sm:max-w-[420px] lg:max-w-[520px] xl:max-w-none xl:min-w-[200px]"
     >
-      <a href={link} className="block cursor-target">
-        <TiltedCard
-          imageSrc={imageSrc}
-          altText={title}
-          containerHeight="260px"
-          containerWidth="100%"
-          imageHeight="260px"
-          imageWidth="100%"
-          rotateAmplitude={12}
-          scaleOnHover={1.08}
-          showMobileWarning={false}
-          showTooltip={false}
-          displayOverlayContent={true}
-          overlayContent={
-            <div className="tilted-card-overlay-content">
-              <span className="tilted-card-title leading-tight">
-                {titleText}
-              </span>
-            </div>
-          }
-        />
-      </a>
+      <div className="relative">
+        {isEditable && onEdit && (
+          <div className="absolute right-3 top-3 z-20 flex gap-2">
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onEdit();
+              }}
+              className="rounded-full bg-black/50 px-3 py-1 text-xs font-semibold text-white backdrop-blur border border-white/15 transition hover:bg-black/70"
+            >
+              Edit
+            </button>
+            {onDelete && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onDelete();
+                }}
+                className="rounded-full bg-red-500/80 px-3 py-1 text-xs font-semibold text-white backdrop-blur border border-red-400/60 transition hover:bg-red-600"
+              >
+                Delete
+              </button>
+            )}
+          </div>
+        )}
+        <a href={link} className="block cursor-target">
+          <TiltedCard
+            imageSrc={imageSrc}
+            altText={title}
+            containerHeight="260px"
+            containerWidth="100%"
+            imageHeight="260px"
+            imageWidth="100%"
+            rotateAmplitude={12}
+            scaleOnHover={1.08}
+            showMobileWarning={false}
+            showTooltip={false}
+            displayOverlayContent={true}
+            overlayContent={
+              <div className="tilted-card-overlay-content">
+                <span className="tilted-card-title leading-tight">
+                  {titleText}
+                </span>
+              </div>
+            }
+          />
+        </a>
+      </div>
     </motion.div>
   );
 }
@@ -638,10 +759,12 @@ function AddCardModal({
   isOpen,
   onClose,
   onSubmit,
+  initialCard,
 }: {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (card: Omit<CardData, 'id'>) => Promise<void>;
+  initialCard?: CardData | null;
 }) {
   const [title, setTitle] = useState('');
   const [link, setLink] = useState('');
@@ -658,8 +781,25 @@ function AddCardModal({
       setImagePreview('');
       setError(null);
       setIsSubmitting(false);
+      return;
     }
-  }, [isOpen]);
+
+    if (initialCard) {
+      setTitle(initialCard.title);
+      setLink(initialCard.link);
+      setImagePreview(initialCard.imageSrc);
+      setImageFile(null);
+      setError(null);
+      setIsSubmitting(false);
+    } else {
+      setTitle('');
+      setLink('');
+      setImageFile(null);
+      setImagePreview('');
+      setError(null);
+      setIsSubmitting(false);
+    }
+  }, [isOpen, initialCard]);
 
   const readFileAsDataUrl = (file: File): Promise<string> =>
     new Promise((resolve, reject) => {
@@ -677,14 +817,15 @@ function AddCardModal({
       setError('Nama dan link wajib diisi.');
       return;
     }
-    if (!imageFile) {
+    if (!imageFile && !initialCard) {
       setError('Upload gambar terlebih dahulu.');
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const dataUrl = await readFileAsDataUrl(imageFile);
+      const dataUrl =
+        imageFile ? await readFileAsDataUrl(imageFile) : initialCard?.imageSrc || '';
       await onSubmit({
         title: title.trim(),
         link: link.trim(),
@@ -710,11 +851,13 @@ function AddCardModal({
         </button>
         <div className="mb-4">
           <p className="text-xs uppercase tracking-[0.16em] text-[#8a8cd1]">
-            New Card
+            {initialCard ? 'Edit Card' : 'New Card'}
           </p>
-          <h3 className="text-2xl font-bold text-white">Tambah Item</h3>
+          <h3 className="text-2xl font-bold text-white">
+            {initialCard ? 'Edit Item' : 'Tambah Item'}
+          </h3>
           <p className="text-sm text-gray-400">
-            Isi nama, link, dan unggah gambar untuk kartu baru.
+            Isi nama, link, dan unggah gambar untuk kartu ini.
           </p>
         </div>
 
