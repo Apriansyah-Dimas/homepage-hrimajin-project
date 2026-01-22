@@ -75,6 +75,28 @@ export default function Hero() {
   });
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const savedAuth = window.localStorage.getItem('hr_admin') === 'true';
+    if (savedAuth) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsAuthenticated(true);
+    }
+
+    const savedCards = window.localStorage.getItem('hr_cards');
+    if (savedCards) {
+      try {
+        const parsed = JSON.parse(savedCards) as CardData[];
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
+          setCards(parsed);
+        }
+      } catch (error) {
+        // ignore corrupted cache and fall back to defaults
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       window.localStorage.setItem('hr_cards', JSON.stringify(cards));
     }
@@ -769,24 +791,3 @@ function AddCardModal({
     </div>
   );
 }
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const savedAuth = window.localStorage.getItem('hr_admin') === 'true';
-    if (savedAuth) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setIsAuthenticated(true);
-    }
-
-    const savedCards = window.localStorage.getItem('hr_cards');
-    if (savedCards) {
-      try {
-        const parsed = JSON.parse(savedCards) as CardData[];
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          // eslint-disable-next-line react-hooks/set-state-in-effect
-          setCards(parsed);
-        }
-      } catch (error) {
-        // ignore corrupted cache and fall back to defaults
-      }
-    }
-  }, []);
