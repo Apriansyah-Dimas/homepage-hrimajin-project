@@ -57,8 +57,26 @@ export default function Hero() {
   const virtualScroll = useMotionValue(0);
   const [progressValue, setProgressValue] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
-  const [cards, setCards] = useState<CardData[]>(DEFAULT_CARDS);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [cards, setCards] = useState<CardData[]>(() => {
+    if (typeof window === 'undefined') return DEFAULT_CARDS;
+    try {
+      const stored = window.localStorage.getItem('hr_cards');
+      const parsed = stored ? (JSON.parse(stored) as CardData[]) : null;
+      return parsed && Array.isArray(parsed) && parsed.length > 0
+        ? parsed
+        : DEFAULT_CARDS;
+    } catch (error) {
+      return DEFAULT_CARDS;
+    }
+  });
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      return window.localStorage.getItem('hr_admin') === 'true';
+    } catch (error) {
+      return false;
+    }
+  });
   const [isEditMode, setIsEditMode] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
@@ -75,30 +93,12 @@ export default function Hero() {
   });
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const savedAuth = window.localStorage.getItem('hr_admin') === 'true';
-    if (savedAuth) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setIsAuthenticated(true);
-    }
-
-    const savedCards = window.localStorage.getItem('hr_cards');
-    if (savedCards) {
-      try {
-        const parsed = JSON.parse(savedCards) as CardData[];
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          // eslint-disable-next-line react-hooks/set-state-in-effect
-          setCards(parsed);
-        }
-      } catch (error) {
-        // ignore corrupted cache and fall back to defaults
-      }
-    }
-  }, []);
-
-  useEffect(() => {
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem('hr_cards', JSON.stringify(cards));
+      try {
+        window.localStorage.setItem('hr_cards', JSON.stringify(cards));
+      } catch (error) {
+        // silently ignore quota/storage errors
+      }
     }
   }, [cards]);
 
