@@ -139,9 +139,6 @@ export default function LoginPage() {
 
   return (
     <main className="login-page">
-      <button type="button" className="close-button" onClick={() => router.push('/')}>
-        X
-      </button>
       <div className="login-wrapper">
         <section className="card">
           <header className="header">
@@ -209,6 +206,14 @@ export default function LoginPage() {
             </div>
 
             <div className="actions">
+              <button
+                type="button"
+                className="secondary-action"
+                onClick={() => router.push('/')}
+                disabled={isLoading}
+              >
+                Cancel
+              </button>
               <button type="submit" className={isLoading ? 'loading' : ''} disabled={isLoading}>
                 <div className="spinner" />
                 <span>{isLoading ? 'Signing in...' : 'Sign in'}</span>
@@ -267,30 +272,6 @@ export default function LoginPage() {
           line-height: 1.5;
           -webkit-font-smoothing: antialiased;
           position: relative;
-        }
-
-        .close-button {
-          position: fixed;
-          top: 16px;
-          right: 16px;
-          width: 38px;
-          height: 38px;
-          border-radius: 999px;
-          border: 1px solid var(--card-border);
-          background: transparent;
-          color: var(--text-main);
-          font-weight: 600;
-          cursor: pointer;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-          z-index: 10;
-        }
-
-        .close-button:hover {
-          background-color: var(--card-border);
-          border-color: var(--input-border-hover);
         }
 
         .login-wrapper {
@@ -426,10 +407,13 @@ export default function LoginPage() {
 
         .actions {
           margin-top: 4px;
+          display: flex;
+          gap: 10px;
+          align-items: center;
         }
 
         button[type='submit'] {
-          width: 100%;
+          flex: 1;
           background-color: var(--accent-primary);
           color: white;
           border: none;
@@ -491,6 +475,29 @@ export default function LoginPage() {
 
         button.loading .spinner {
           display: inline-block;
+        }
+
+        .secondary-action {
+          flex: 1;
+          background: transparent;
+          border: 1px solid var(--input-border);
+          border-radius: var(--radius-input);
+          color: var(--text-main);
+          padding: 12px;
+          font-size: 15px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+        }
+
+        .secondary-action:hover {
+          border-color: var(--input-border-hover);
+          background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .secondary-action:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
         }
 
         .login-hidden-filter {
