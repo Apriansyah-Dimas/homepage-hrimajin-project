@@ -760,31 +760,31 @@ function AddCardModal({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  onSubmitCreate: (card: Omit<CardData, ''id''>) => Promise<void>;
-  onSubmitEdit: (card: Omit<CardData, ''id''>) => Promise<void>;
+  onSubmitCreate: (card: Omit<CardData, 'id'>) => Promise<void>;
+  onSubmitEdit: (card: Omit<CardData, 'id'>) => Promise<void>;
   initialCard?: CardData | null;
 }) {
-  const mode: ''create'' | ''edit'' = initialCard ? ''edit'' : ''create'';
-  const [title, setTitle] = useState('''');
-  const [link, setLink] = useState('''');
+  const mode: 'create' | 'edit' = initialCard ? 'edit' : 'create';
+  const [title, setTitle] = useState('');
+  const [link, setLink] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>('''');
-  const [uploadTone, setUploadTone] = useState<''light'' | ''dark'' | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
+  const [uploadTone, setUploadTone] = useState<'light' | 'dark' | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<{ title: string; link: string; image: string }>({
-    title: '''',
-    link: '''',
-    image: '''',
+    title: '',
+    link: '',
+    image: '',
   });
 
   useEffect(() => {
     const resetState = () => {
-      setTitle(initialCard?.title ?? '''');
-      setLink(initialCard?.link ?? '''');
+      setTitle(initialCard?.title ?? '');
+      setLink(initialCard?.link ?? '');
       setImageFile(null);
-      setImagePreview(initialCard?.imageSrc ?? '''');
+      setImagePreview(initialCard?.imageSrc ?? '');
       setUploadTone(null);
-      setErrors({ title: '''', link: '''', image: '''' });
+      setErrors({ title: '', link: '', image: '' });
       setIsSubmitting(false);
     };
 
@@ -811,21 +811,21 @@ function AddCardModal({
     name.length > 20 ? `${name.slice(0, 17)}...` : name;
 
   const validateTitle = (value: string) =>
-    value.trim() ? '''' : ''Card name is required.'';
+    value.trim() ? '' : 'Card name is required.';
 
   const validateLink = (value: string) => {
-    if (!value.trim()) return ''Please enter a valid URL.'';
+    if (!value.trim()) return 'Please enter a valid URL.';
     try {
       // eslint-disable-next-line no-new
       new URL(value);
-      return '''';
+      return '';
     } catch (_) {
-      return ''Please enter a valid URL.'';
+      return 'Please enter a valid URL.';
     }
   };
 
   const validateImage = () =>
-    imageFile || imagePreview ? '''' : ''Please select an image.'';
+    imageFile || imagePreview ? '' : 'Please select an image.';
 
   const updateUploadTone = (dataUrl: string) => {
     if (!dataUrl) {
@@ -834,8 +834,8 @@ function AddCardModal({
     }
     const img = new Image();
     img.onload = () => {
-      const canvas = document.createElement(''canvas'');
-      const ctx = canvas.getContext(''2d'');
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
       canvas.width = 100;
       canvas.height = 100;
       ctx?.drawImage(img, 0, 0, 100, 100);
@@ -851,7 +851,7 @@ function AddCardModal({
         colorSum += avg;
       }
       const brightness = Math.floor(colorSum / (100 * 100));
-      setUploadTone(brightness > 128 ? ''light'' : ''dark'');
+      setUploadTone(brightness > 128 ? 'light' : 'dark');
     };
     img.src = dataUrl;
   };
@@ -859,16 +859,16 @@ function AddCardModal({
   const handleImageChange = (file?: File) => {
     if (!file) {
       setImageFile(null);
-      setImagePreview(mode === ''edit'' ? initialCard?.imageSrc ?? '''' : '''');
+      setImagePreview(mode === 'edit' ? initialCard?.imageSrc ?? '' : '');
       setUploadTone(null);
-      setErrors((prev) => ({ ...prev, image: '''' }));
+      setErrors((prev) => ({ ...prev, image: '' }));
       return;
     }
     setImageFile(file);
     const preview = URL.createObjectURL(file);
     setImagePreview(preview);
     updateUploadTone(preview);
-    setErrors((prev) => ({ ...prev, image: '''' }));
+    setErrors((prev) => ({ ...prev, image: '' }));
   };
 
   const handleSubmit = async (event: FormEvent) => {
@@ -890,7 +890,7 @@ function AddCardModal({
           ? await readFileAsDataUrl(imageFile)
           : initialCard?.imageSrc || imagePreview;
 
-      const handler = mode === ''edit'' ? onSubmitEdit : onSubmitCreate;
+      const handler = mode === 'edit' ? onSubmitEdit : onSubmitCreate;
       await handler({
         title: title.trim(),
         link: link.trim(),
@@ -907,9 +907,9 @@ function AddCardModal({
   const uploadLabel = imageFile?.name
     ? truncateFileName(imageFile.name)
     : hasImage
-      ? ''Image Uploaded''
-      : ''Upload Image'';
-  const uploadToneClass = uploadTone === ''light'' ? ''text-black'' : uploadTone === ''dark'' ? ''text-white'' : '';
+      ? 'Image Uploaded'
+      : 'Upload Image';
+  const uploadToneClass = uploadTone === 'light' ? 'text-black' : uploadTone === 'dark' ? 'text-white' : '';
 
   return (
     <div className="create-card-backdrop">
@@ -926,14 +926,14 @@ function AddCardModal({
                 autoComplete="off"
                 onChange={(e) => {
                   setTitle(e.target.value);
-                  if (errors.title) setErrors((prev) => ({ ...prev, title: '''' }));
+                  if (errors.title) setErrors((prev) => ({ ...prev, title: '' }));
                 }}
                 onBlur={() => setErrors((prev) => ({ ...prev, title: validateTitle(title) }))}
-                className={errors.title ? ''input-error'' : ''''}
+                className={errors.title ? 'input-error' : ''}
                 disabled={isSubmitting}
               />
-              <span className={`error-message ${errors.title ? ''visible'' : ''''}`}>
-                {errors.title || ''Card name is required.''}
+              <span className={`error-message ${errors.title ? 'visible' : ''}`}>
+                {errors.title || 'Card name is required.'}
               </span>
             </div>
 
@@ -947,14 +947,14 @@ function AddCardModal({
                 autoComplete="off"
                 onChange={(e) => {
                   setLink(e.target.value);
-                  if (errors.link) setErrors((prev) => ({ ...prev, link: '''' }));
+                  if (errors.link) setErrors((prev) => ({ ...prev, link: '' }));
                 }}
                 onBlur={() => setErrors((prev) => ({ ...prev, link: validateLink(link) }))}
-                className={errors.link ? ''input-error'' : ''''}
+                className={errors.link ? 'input-error' : ''}
                 disabled={isSubmitting}
               />
-              <span className={`error-message ${errors.link ? ''visible'' : ''''}`}>
-                {errors.link || ''Please enter a valid URL.''}
+              <span className={`error-message ${errors.link ? 'visible' : ''}`}>
+                {errors.link || 'Please enter a valid URL.'}
               </span>
             </div>
 
@@ -968,9 +968,9 @@ function AddCardModal({
                   disabled={isSubmitting}
                 />
                 <div
-                  className={`upload-area ${hasImage ? ''has-file'' : ''''}`}
+                  className={`upload-area ${hasImage ? 'has-file' : ''}`}
                   style={{
-                    backgroundImage: hasImage ? `url(${imagePreview})` : ''none'',
+                    backgroundImage: hasImage ? `url(${imagePreview})` : 'none',
                   }}
                 >
                   <div className="plus-icon">
@@ -984,8 +984,8 @@ function AddCardModal({
                   </div>
                 </div>
               </div>
-              <span className={`error-message ${errors.image ? ''visible'' : ''''}`}>
-                {errors.image || ''Please select an image.''}
+              <span className={`error-message ${errors.image ? 'visible' : ''}`}>
+                {errors.image || 'Please select an image.'}
               </span>
             </div>
 
@@ -993,11 +993,11 @@ function AddCardModal({
               <button
                 type="submit"
                 id="submitBtn"
-                className={isSubmitting ? ''loading'' : ''''}
+                className={isSubmitting ? 'loading' : ''}
                 disabled={isSubmitting}
               >
                 <div className="spinner" />
-                <span>{isSubmitting ? ''Saving...'' : mode === ''edit'' ? ''Save Changes'' : ''Create Card''}</span>
+                <span>{isSubmitting ? 'Saving...' : mode === 'edit' ? 'Save Changes' : 'Create Card'}</span>
               </button>
               <button
                 type="button"
