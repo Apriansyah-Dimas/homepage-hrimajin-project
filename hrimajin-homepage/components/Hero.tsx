@@ -258,7 +258,7 @@ export default function Hero() {
     return (
       <section
         ref={sectionRef}
-        className="relative w-full px-4 py-12 sm:py-16"
+        className="relative w-full min-w-[375px] max-w-[520px] mx-auto px-4 py-12 sm:py-16"
       >
         <div className="relative z-10 max-w-5xl w-full mx-auto px-2 sm:px-4 text-left flex justify-center">
           <div className="inline-flex flex-col items-start gap-3">
@@ -320,20 +320,22 @@ export default function Hero() {
         </div>
 
         <div className="relative z-10 mt-12">
-          <NavigationCardsContent
-            cards={cardsWithAddButton}
-            isAuthenticated={isAuthenticated}
-            isEditMode={isEditMode}
-            onEditCard={(card) => {
-              setEditingCard(card);
-              setIsAddModalOpen(true);
-            }}
-            onOpenAddModal={() => {
-              setEditingCard(null);
-              setIsAddModalOpen(true);
-            }}
-            onDeleteCard={(card) => handleDeleteCard(card.id)}
-          />
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-3 shadow-[0_18px_50px_rgba(0,0,0,0.35)] backdrop-blur-xl max-h-[65vh] min-h-[320px] overflow-y-auto overscroll-contain">
+            <NavigationCardsContent
+              cards={cardsWithAddButton}
+              isAuthenticated={isAuthenticated}
+              isEditMode={isEditMode}
+              onEditCard={(card) => {
+                setEditingCard(card);
+                setIsAddModalOpen(true);
+              }}
+              onOpenAddModal={() => {
+                setEditingCard(null);
+                setIsAddModalOpen(true);
+              }}
+              onDeleteCard={(card) => handleDeleteCard(card.id)}
+            />
+          </div>
         </div>
 
         <AddCardModal
