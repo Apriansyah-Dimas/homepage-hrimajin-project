@@ -344,11 +344,8 @@ export default function Hero() {
             setIsAddModalOpen(false);
             setEditingCard(null);
           }}
-          onSubmit={
-            editingCard
-              ? (payload) => handleUpdateCard(editingCard.id, payload)
-              : handleSubmitNewCard
-          }
+          onSubmitCreate={handleSubmitNewCard}
+          onSubmitEdit={(payload) => (editingCard ? handleUpdateCard(editingCard.id, payload) : handleSubmitNewCard(payload))}
           initialCard={editingCard}
         />
       </section>
@@ -567,11 +564,8 @@ export default function Hero() {
           setIsAddModalOpen(false);
           setEditingCard(null);
         }}
-        onSubmit={
-          editingCard
-            ? (payload) => handleUpdateCard(editingCard.id, payload)
-            : handleSubmitNewCard
-        }
+        onSubmitCreate={handleSubmitNewCard}
+        onSubmitEdit={(payload) => (editingCard ? handleUpdateCard(editingCard.id, payload) : handleSubmitNewCard(payload))}
         initialCard={editingCard}
       />
     </>
@@ -760,18 +754,22 @@ function AddCardTile({
 function AddCardModal({
   isOpen,
   onClose,
-  onSubmit,
+  onSubmitCreate,
+  onSubmitEdit,
   initialCard,
 }: {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (card: Omit<CardData, 'id'>) => Promise<void>;
+  onSubmitCreate: (card: Omit<CardData, 'id'>) => Promise<void>;
+  onSubmitEdit: (card: Omit<CardData, 'id'>) => Promise<void>;
   initialCard?: CardData | null;
 }) {
+  const [mode, setMode] = useState<'create' | 'edit'>(initialCard ? 'edit' : 'create');
   const [title, setTitle] = useState('');
   const [link, setLink] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
+  const [uploadTone, setUploadTone] = useState<'light' | 'dark' | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<{ title: string; link: string; image: string }>({
     title: '',
@@ -782,10 +780,12 @@ function AddCardModal({
 
   useEffect(() => {
     const resetState = () => {
+      setMode(initialCard ? 'edit' : 'create');
       setTitle('');
       setLink('');
       setImageFile(null);
       setImagePreview('');
+      setUploadTone(null);
       setErrors({ title: '', link: '', image: '' });
       setGeneralError(null);
       setIsSubmitting(false);
@@ -797,13 +797,16 @@ function AddCardModal({
     }
 
     if (initialCard) {
+      setMode('edit');
       setTitle(initialCard.title);
       setLink(initialCard.link);
       setImagePreview(initialCard.imageSrc);
+      setUploadTone(null);
       setImageFile(null);
       setErrors({ title: '', link: '', image: '' });
       setGeneralError(null);
       setIsSubmitting(false);
+      updateUploadTone(initialCard.imageSrc);
     } else {
       resetState();
     }
@@ -834,19 +837,77 @@ function AddCardModal({
     }
   };
 
-  const validateImage = () => (imageFile || imagePreview ? '' : 'Upload gambar terlebih dahulu.');
+  const validateImage = () => {
+    if (mode === 'create') {
+      return imageFile ? '' : 'Upload gambar terlebih dahulu.';
+    }
+    return imageFile || imagePreview ? '' : 'Upload gambar terlebih dahulu.';
+  };
+
+  const updateUploadTone = (dataUrl: string) => {
+    if (!dataUrl) {
+      setUploadTone(null);
+      return;
+    }
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = 100;
+      canvas.height = 100;
+      ctx?.drawImage(img, 0, 0, 100, 100);
+      const imageData = ctx?.getImageData(0, 0, 100, 100);
+      if (!imageData) return;
+      const data = imageData.data;
+      let colorSum = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        const avg = Math.floor((r * 299 + g * 587 + b * 114) / 1000);
+        colorSum += avg;
+      }
+      const brightness = Math.floor(colorSum / (100 * 100));
+      setUploadTone(brightness > 128 ? 'light' : 'dark');
+    };
+    img.src = dataUrl;
+  };
 
   const handleImageChange = (file?: File) => {
     if (!file) {
       setImageFile(null);
-      setImagePreview(initialCard?.imageSrc ?? '');
+      setImagePreview(mode === 'edit' ? initialCard?.imageSrc ?? '' : '');
+      setUploadTone(null);
       setErrors((prev) => ({ ...prev, image: '' }));
       return;
     }
     setImageFile(file);
     const preview = URL.createObjectURL(file);
     setImagePreview(preview);
+    updateUploadTone(preview);
     setErrors((prev) => ({ ...prev, image: '' }));
+  };
+
+  const handleModeSwitch = (nextMode: 'create' | 'edit') => {
+    if (nextMode === mode) return;
+    if (nextMode === 'edit' && !initialCard) return;
+
+    setMode(nextMode);
+    setErrors({ title: '', link: '', image: '' });
+    setGeneralError(null);
+    setImageFile(null);
+
+    if (nextMode === 'edit' && initialCard) {
+      setTitle(initialCard.title);
+      setLink(initialCard.link);
+      setImagePreview(initialCard.imageSrc);
+      updateUploadTone(initialCard.imageSrc);
+    } else {
+      setTitle('');
+      setLink('');
+      setImagePreview('');
+      setUploadTone(null);
+    }
   };
 
   const handleSubmit = async (event: FormEvent) => {
@@ -865,8 +926,14 @@ function AddCardModal({
     setIsSubmitting(true);
     try {
       const dataUrl =
-        imageFile ? await readFileAsDataUrl(imageFile) : initialCard?.imageSrc || '';
-      await onSubmit({
+        imageFile
+          ? await readFileAsDataUrl(imageFile)
+          : mode === 'edit'
+            ? initialCard?.imageSrc || imagePreview
+            : imagePreview;
+
+      const handler = mode === 'edit' ? onSubmitEdit : onSubmitCreate;
+      await handler({
         title: title.trim(),
         link: link.trim(),
         imageSrc: dataUrl,
@@ -899,9 +966,27 @@ function AddCardModal({
           X
         </button>
 
+        <div className="mode-switch">
+          <button
+            type="button"
+            className={`mode-btn ${mode === 'create' ? 'active' : ''}`}
+            onClick={() => handleModeSwitch('create')}
+          >
+            Create Card
+          </button>
+          <button
+            type="button"
+            className={`mode-btn ${mode === 'edit' ? 'active' : ''}`}
+            onClick={() => handleModeSwitch('edit')}
+            disabled={!initialCard}
+          >
+            Edit Card
+          </button>
+        </div>
+
         <div className="card-header">
-          <p className="eyebrow">{initialCard ? 'Edit Card' : 'New Card'}</p>
-          <h3>{initialCard ? 'Edit Item' : 'Tambah Item'}</h3>
+          <p className="eyebrow">{mode === 'edit' ? 'Edit Card' : 'New Card'}</p>
+          <h3>{mode === 'edit' ? 'Edit Item' : 'Tambah Item'}</h3>
           <p className="subtitle">Isi nama, link, dan unggah gambar untuk kartu ini.</p>
         </div>
 
@@ -964,7 +1049,13 @@ function AddCardModal({
                     <line x1="5" y1="12" x2="19" y2="12" />
                   </svg>
                 </div>
-                <div className="upload-text">{uploadLabel}</div>
+                <div
+                  className={`upload-text ${
+                    uploadTone === 'light' ? 'text-black' : uploadTone === 'dark' ? 'text-white' : ''
+                  }`}
+                >
+                  {uploadLabel}
+                </div>
               </div>
             </div>
             <span className={`error-message ${errors.image ? 'visible' : ''}`}>
@@ -1086,6 +1177,39 @@ function AddCardModal({
         .subtitle {
           font-size: 14px;
           color: rgba(255, 255, 255, 0.75);
+        }
+
+        .mode-switch {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          border: 1px solid var(--card-border);
+          border-radius: 12px;
+          overflow: hidden;
+          background: rgba(255, 255, 255, 0.02);
+          margin-bottom: 10px;
+        }
+
+        .mode-btn {
+          padding: 12px;
+          text-align: center;
+          cursor: pointer;
+          font-weight: 700;
+          font-size: 14px;
+          color: var(--text-muted);
+          background: transparent;
+          border: none;
+          transition: all 0.25s ease;
+        }
+
+        .mode-btn.active {
+          color: #fff;
+          background: rgba(99, 101, 185, 0.12);
+          box-shadow: inset 0 0 0 1px rgba(99, 101, 185, 0.45);
+        }
+
+        .mode-btn:disabled {
+          cursor: not-allowed;
+          opacity: 0.5;
         }
 
         .create-card-form {
