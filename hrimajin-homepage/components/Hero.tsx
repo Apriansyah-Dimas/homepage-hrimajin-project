@@ -72,7 +72,7 @@ export default function Hero() {
   }, []);
 
   useEffect(() => {
-    if (isMobile) {
+    if (isMobile || isAddModalOpen) {
       virtualScroll.set(0);
       return;
     }
@@ -89,10 +89,10 @@ export default function Hero() {
 
     window.addEventListener('wheel', handleWheel, { passive: false });
     return () => window.removeEventListener('wheel', handleWheel);
-  }, [virtualScroll, isMobile]);
+  }, [virtualScroll, isMobile, isAddModalOpen]);
 
   useEffect(() => {
-    if (isMobile) {
+    if (isMobile || isAddModalOpen) {
       virtualScroll.set(0);
       return;
     }
@@ -132,7 +132,7 @@ export default function Hero() {
       window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [virtualScroll, isMobile]);
+  }, [virtualScroll, isMobile, isAddModalOpen]);
 
   const heroBlur = useTransform(
     virtualScroll,
@@ -871,6 +871,14 @@ function AddCardModal({
     setErrors((prev) => ({ ...prev, image: '' }));
   };
 
+  const handleCancel = () => {
+    setImageFile(null);
+    setImagePreview(initialCard?.imageSrc ?? '');
+    setUploadTone(null);
+    setErrors({ title: '', link: '', image: '' });
+    onClose();
+  };
+
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
 
@@ -1003,7 +1011,7 @@ function AddCardModal({
                 type="button"
                 className="btn-cancel"
                 id="cancelBtn"
-                onClick={onClose}
+                onClick={handleCancel}
                 disabled={isSubmitting}
               >
                 Cancel
@@ -1282,7 +1290,6 @@ function AddCardModal({
           background-color: transparent;
           color: var(--text-muted);
           border: 1px solid var(--input-border);
-          display: none;
         }
 
         button.btn-cancel:hover:not(:disabled) {
