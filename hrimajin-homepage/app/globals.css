@@ -60,3 +60,92 @@ body {
   -ms-user-select: none;
   user-select: none;
 }
+
+/* Login gradient button */
+.login-gradient-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 24px;
+  font-size: 15px;
+  font-weight: 700;
+  color: white;
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  overflow: hidden;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 10px 30px rgba(99, 101, 185, 0.25);
+}
+
+.login-gradient-button:hover {
+  transform: translateY(-2px);
+}
+
+.login-gradient-button:active {
+  transform: translateY(0);
+}
+
+.login-gradient-button::before {
+  content: "";
+  position: absolute;
+  top: -60%;
+  left: -60%;
+  width: 220%;
+  height: 220%;
+  background: conic-gradient(
+    from 0deg,
+    #6365b9,
+    #8a8cd1,
+    #4a4c91,
+    #b5b7ec,
+    #6365b9
+  );
+  z-index: -2;
+  filter: blur(8px);
+  transform: rotate(0deg);
+  transition: transform 1.5s ease-in-out;
+}
+
+.login-gradient-button:hover::before {
+  transform: rotate(180deg);
+}
+
+.login-gradient-button::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  background: rgba(10, 10, 10, 0.92);
+  border-radius: 999px;
+  z-index: -1;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.login-gradient-text {
+  color: transparent;
+  background: conic-gradient(
+    from 0deg,
+    #cfd0ff,
+    #8a8cd1,
+    #6365b9,
+    #8a8cd1,
+    #cfd0ff
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  letter-spacing: 0.04em;
+}
+
+.login-gradient-button:hover .login-gradient-text {
+  animation: hue-rotating 1.8s linear infinite;
+}
+
+@keyframes hue-rotating {
+  to {
+    filter: hue-rotate(360deg);
+  }
+}
