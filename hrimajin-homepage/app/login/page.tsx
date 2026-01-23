@@ -114,6 +114,7 @@ export default function LoginPage() {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (isLoading) return;
     setErrorEmail('');
     setErrorPassword('');
 
@@ -439,14 +440,14 @@ export default function LoginPage() {
         }
 
         .spinner {
-          display: inline-block;
+          display: none;
           width: 16px;
           height: 16px;
           border: 2px solid rgba(255, 255, 255, 0.3);
           border-radius: 50%;
           border-top-color: #fff;
           animation: login-spin 0.8s linear infinite;
-          margin-right: 2px;
+          margin-right: 4px;
           vertical-align: middle;
         }
 
@@ -458,6 +459,10 @@ export default function LoginPage() {
 
         button.loading {
           opacity: 0.9;
+        }
+
+        button.loading .spinner {
+          display: inline-block;
         }
 
         .login-hidden-filter {
