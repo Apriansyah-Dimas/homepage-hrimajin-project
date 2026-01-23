@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import {
   motion,
@@ -277,7 +277,7 @@ export default function Hero() {
                     }}
                   >
                     {word}
-                    {index !== lineOneWords.length - 1 ? '\u00a0' : ''}
+                    {index !== lineOneWords.length - 1 ? '\\u00a0' : ''}
                   </span>
                 ))}
               </span>
@@ -295,7 +295,7 @@ export default function Hero() {
                     }}
                   >
                     {word}
-                    {index !== lineTwoWords.length - 1 ? '\u00a0' : ''}
+                    {index !== lineTwoWords.length - 1 ? '\\u00a0' : ''}
                   </span>
                 ))}
                 {' '}
@@ -426,7 +426,7 @@ export default function Hero() {
                     }}
                   >
                     {word}
-                    {index !== lineOneWords.length - 1 ? '\u00a0' : ''}
+                    {index !== lineOneWords.length - 1 ? '\\u00a0' : ''}
                   </motion.span>
                 ))}
               </span>
@@ -459,7 +459,7 @@ export default function Hero() {
                     }}
                   >
                     {word}
-                    {index !== lineTwoWords.length - 1 ? '\u00a0' : ''}
+                    {index !== lineTwoWords.length - 1 ? '\\u00a0' : ''}
                   </motion.span>
                 ))}
                 {' '}
@@ -871,6 +871,13 @@ function AddCardModal({
     setErrors((prev) => ({ ...prev, image: '' }));
   };
 
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview('');
+    setUploadTone(null);
+    setErrors((prev) => ({ ...prev, image: '' }));
+  };
+
   const handleCancel = () => {
     setImageFile(null);
     setImagePreview(initialCard?.imageSrc ?? '');
@@ -923,6 +930,15 @@ function AddCardModal({
     <div className="create-card-backdrop">
       <div className="login-wrapper">
         <main className="card">
+          <button
+            type="button"
+            aria-label="Close"
+            className="close-btn"
+            onClick={handleCancel}
+            disabled={isSubmitting}
+          >
+            ×
+          </button>
           <form onSubmit={handleSubmit} noValidate>
             <div className="input-group">
               <label htmlFor="cardName">Card Name</label>
@@ -981,6 +997,17 @@ function AddCardModal({
                     backgroundImage: hasImage ? `url(${imagePreview})` : 'none',
                   }}
                 >
+                  {hasImage && (
+                    <button
+                      type="button"
+                      className="remove-image"
+                      aria-label="Remove image"
+                      onClick={handleRemoveImage}
+                      disabled={isSubmitting}
+                    >
+                      ×
+                    </button>
+                  )}
                   <div className="plus-icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
                       <line x1="12" y1="5" x2="12" y2="19" />
@@ -1074,6 +1101,30 @@ function AddCardModal({
           transform: translateY(20px);
           animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
           position: relative;
+        }
+
+        .close-btn {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          background: transparent;
+          border: none;
+          color: var(--text-muted);
+          font-size: 22px;
+          line-height: 1;
+          cursor: pointer;
+          padding: 4px 6px;
+          transition: color 0.2s ease, transform 0.2s ease;
+        }
+
+        .close-btn:hover:not(:disabled) {
+          color: #fff;
+          transform: scale(1.05);
+        }
+
+        .close-btn:disabled {
+          opacity: 0.4;
+          cursor: not-allowed;
         }
 
         @keyframes fadeUp {
@@ -1244,6 +1295,43 @@ function AddCardModal({
           border-color: var(--accent-primary);
         }
 
+        .remove-image {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          border: 1px solid rgba(255, 255, 255, 0.18);
+          background: rgba(0, 0, 0, 0.45);
+          color: #fff;
+          font-size: 18px;
+          font-weight: 700;
+          line-height: 1;
+          display: grid;
+          place-items: center;
+          opacity: 0;
+          transform: scale(0.8);
+          transition: all 0.25s ease;
+          cursor: pointer;
+          z-index: 3;
+        }
+
+        .upload-area.has-file:hover .remove-image {
+          opacity: 1;
+          transform: scale(1);
+        }
+
+        .remove-image:hover:not(:disabled) {
+          border-color: rgba(255, 255, 255, 0.32);
+          background: rgba(0, 0, 0, 0.65);
+        }
+
+        .remove-image:disabled {
+          opacity: 0.3;
+          cursor: not-allowed;
+        }
+
         .upload-area.has-file .plus-icon {
           display: none;
         }
@@ -1325,3 +1413,17 @@ function AddCardModal({
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
