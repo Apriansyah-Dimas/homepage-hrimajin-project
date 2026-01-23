@@ -1,7 +1,7 @@
 import Background from "@/components/Background";
 import Hero from "@/components/Hero";
 import Particles from "@/components/Particles";
-import Link from "next/link";
+import LoginLogoutButton from "@/components/LoginLogoutButton";
 
 export default function Home() {
   return (
@@ -17,16 +17,7 @@ export default function Home() {
 
       {/* Floating login button */}
       <div className="fixed bottom-6 right-6 z-50">
-        <Link href="/login" className="login-blob-btn">
-          <span className="login-blob-inner">
-            <span className="login-blob-blobs">
-              {Array.from({ length: 4 }).map((_, idx) => (
-                <span key={idx} className="login-blob-blob" />
-              ))}
-            </span>
-          </span>
-          <span className="login-blob-label">Login</span>
-        </Link>
+        <LoginLogoutButton />
       </div>
 
       {/* Goo filter for blob button */}
