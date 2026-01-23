@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import {
   motion,
@@ -760,34 +760,31 @@ function AddCardModal({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  onSubmitCreate: (card: Omit<CardData, 'id'>) => Promise<void>;
-  onSubmitEdit: (card: Omit<CardData, 'id'>) => Promise<void>;
+  onSubmitCreate: (card: Omit<CardData, ''id''>) => Promise<void>;
+  onSubmitEdit: (card: Omit<CardData, ''id''>) => Promise<void>;
   initialCard?: CardData | null;
 }) {
-  const [mode, setMode] = useState<'create' | 'edit'>(initialCard ? 'edit' : 'create');
-  const [title, setTitle] = useState('');
-  const [link, setLink] = useState('');
+  const mode: ''create'' | ''edit'' = initialCard ? ''edit'' : ''create'';
+  const [title, setTitle] = useState('''');
+  const [link, setLink] = useState('''');
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>('');
-  const [uploadTone, setUploadTone] = useState<'light' | 'dark' | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('''');
+  const [uploadTone, setUploadTone] = useState<''light'' | ''dark'' | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<{ title: string; link: string; image: string }>({
-    title: '',
-    link: '',
-    image: '',
+    title: '''',
+    link: '''',
+    image: '''',
   });
-  const [generalError, setGeneralError] = useState<string | null>(null);
 
   useEffect(() => {
     const resetState = () => {
-      setMode(initialCard ? 'edit' : 'create');
-      setTitle('');
-      setLink('');
+      setTitle(initialCard?.title ?? '''');
+      setLink(initialCard?.link ?? '''');
       setImageFile(null);
-      setImagePreview('');
+      setImagePreview(initialCard?.imageSrc ?? '''');
       setUploadTone(null);
-      setErrors({ title: '', link: '', image: '' });
-      setGeneralError(null);
+      setErrors({ title: '''', link: '''', image: '''' });
       setIsSubmitting(false);
     };
 
@@ -796,19 +793,9 @@ function AddCardModal({
       return;
     }
 
-    if (initialCard) {
-      setMode('edit');
-      setTitle(initialCard.title);
-      setLink(initialCard.link);
-      setImagePreview(initialCard.imageSrc);
-      setUploadTone(null);
-      setImageFile(null);
-      setErrors({ title: '', link: '', image: '' });
-      setGeneralError(null);
-      setIsSubmitting(false);
+    resetState();
+    if (initialCard?.imageSrc) {
       updateUploadTone(initialCard.imageSrc);
-    } else {
-      resetState();
     }
   }, [isOpen, initialCard]);
 
@@ -821,28 +808,24 @@ function AddCardModal({
     });
 
   const truncateFileName = (name: string) =>
-    name.length > 28 ? `${name.slice(0, 25)}...` : name;
+    name.length > 20 ? `${name.slice(0, 17)}...` : name;
 
   const validateTitle = (value: string) =>
-    value.trim() ? '' : 'Nama item wajib diisi.';
+    value.trim() ? '''' : ''Card name is required.'';
 
   const validateLink = (value: string) => {
-    if (!value.trim()) return 'Link wajib diisi.';
+    if (!value.trim()) return ''Please enter a valid URL.'';
     try {
       // eslint-disable-next-line no-new
       new URL(value);
-      return '';
+      return '''';
     } catch (_) {
-      return 'Link tidak valid.';
+      return ''Please enter a valid URL.'';
     }
   };
 
-  const validateImage = () => {
-    if (mode === 'create') {
-      return imageFile ? '' : 'Upload gambar terlebih dahulu.';
-    }
-    return imageFile || imagePreview ? '' : 'Upload gambar terlebih dahulu.';
-  };
+  const validateImage = () =>
+    imageFile || imagePreview ? '''' : ''Please select an image.'';
 
   const updateUploadTone = (dataUrl: string) => {
     if (!dataUrl) {
@@ -851,8 +834,8 @@ function AddCardModal({
     }
     const img = new Image();
     img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
+      const canvas = document.createElement(''canvas'');
+      const ctx = canvas.getContext(''2d'');
       canvas.width = 100;
       canvas.height = 100;
       ctx?.drawImage(img, 0, 0, 100, 100);
@@ -868,7 +851,7 @@ function AddCardModal({
         colorSum += avg;
       }
       const brightness = Math.floor(colorSum / (100 * 100));
-      setUploadTone(brightness > 128 ? 'light' : 'dark');
+      setUploadTone(brightness > 128 ? ''light'' : ''dark'');
     };
     img.src = dataUrl;
   };
@@ -876,43 +859,20 @@ function AddCardModal({
   const handleImageChange = (file?: File) => {
     if (!file) {
       setImageFile(null);
-      setImagePreview(mode === 'edit' ? initialCard?.imageSrc ?? '' : '');
+      setImagePreview(mode === ''edit'' ? initialCard?.imageSrc ?? '''' : '''');
       setUploadTone(null);
-      setErrors((prev) => ({ ...prev, image: '' }));
+      setErrors((prev) => ({ ...prev, image: '''' }));
       return;
     }
     setImageFile(file);
     const preview = URL.createObjectURL(file);
     setImagePreview(preview);
     updateUploadTone(preview);
-    setErrors((prev) => ({ ...prev, image: '' }));
-  };
-
-  const handleModeSwitch = (nextMode: 'create' | 'edit') => {
-    if (nextMode === mode) return;
-    if (nextMode === 'edit' && !initialCard) return;
-
-    setMode(nextMode);
-    setErrors({ title: '', link: '', image: '' });
-    setGeneralError(null);
-    setImageFile(null);
-
-    if (nextMode === 'edit' && initialCard) {
-      setTitle(initialCard.title);
-      setLink(initialCard.link);
-      setImagePreview(initialCard.imageSrc);
-      updateUploadTone(initialCard.imageSrc);
-    } else {
-      setTitle('');
-      setLink('');
-      setImagePreview('');
-      setUploadTone(null);
-    }
+    setErrors((prev) => ({ ...prev, image: '''' }));
   };
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    setGeneralError(null);
 
     const validationResult = {
       title: validateTitle(title),
@@ -928,18 +888,14 @@ function AddCardModal({
       const dataUrl =
         imageFile
           ? await readFileAsDataUrl(imageFile)
-          : mode === 'edit'
-            ? initialCard?.imageSrc || imagePreview
-            : imagePreview;
+          : initialCard?.imageSrc || imagePreview;
 
-      const handler = mode === 'edit' ? onSubmitEdit : onSubmitCreate;
+      const handler = mode === ''edit'' ? onSubmitEdit : onSubmitCreate;
       await handler({
         title: title.trim(),
         link: link.trim(),
         imageSrc: dataUrl,
       });
-    } catch (_) {
-      setGeneralError('Gagal menambah card. Coba lagi.');
     } finally {
       setIsSubmitting(false);
     }
@@ -951,330 +907,244 @@ function AddCardModal({
   const uploadLabel = imageFile?.name
     ? truncateFileName(imageFile.name)
     : hasImage
-      ? 'Gambar terunggah'
-      : 'Upload Image';
+      ? ''Image Uploaded''
+      : ''Upload Image'';
+  const uploadToneClass = uploadTone === ''light'' ? ''text-black'' : uploadTone === ''dark'' ? ''text-white'' : '';
 
   return (
     <div className="create-card-backdrop">
-      <div className="create-card-card">
-        <button
-          onClick={onClose}
-          aria-label="Close"
-          className="create-card-close"
-          type="button"
-        >
-          X
-        </button>
-
-        <div className="mode-switch">
-          <button
-            type="button"
-            className={`mode-btn ${mode === 'create' ? 'active' : ''}`}
-            onClick={() => handleModeSwitch('create')}
-          >
-            Create Card
-          </button>
-          <button
-            type="button"
-            className={`mode-btn ${mode === 'edit' ? 'active' : ''}`}
-            onClick={() => handleModeSwitch('edit')}
-            disabled={!initialCard}
-          >
-            Edit Card
-          </button>
-        </div>
-
-        <div className="card-header">
-          <p className="eyebrow">{mode === 'edit' ? 'Edit Card' : 'New Card'}</p>
-          <h3>{mode === 'edit' ? 'Edit Item' : 'Tambah Item'}</h3>
-          <p className="subtitle">Isi nama, link, dan unggah gambar untuk kartu ini.</p>
-        </div>
-
-        <form className="create-card-form" onSubmit={handleSubmit} noValidate>
-          <div className="input-group">
-            <label htmlFor="cardName">Nama item</label>
-            <input
-              id="cardName"
-              value={title}
-              onChange={(e) => {
-                setTitle(e.target.value);
-                if (errors.title) {
-                  setErrors((prev) => ({ ...prev, title: '' }));
-                }
-              }}
-              onBlur={() => setErrors((prev) => ({ ...prev, title: validateTitle(title) }))}
-              className={`text-input ${errors.title ? 'input-error' : ''}`}
-              placeholder="Contoh: Employee Portal"
-              autoComplete="off"
-            />
-            <span className={`error-message ${errors.title ? 'visible' : ''}`}>
-              {errors.title || 'Nama item wajib diisi.'}
-            </span>
-          </div>
-
-          <div className="input-group">
-            <label htmlFor="cardLink">Link</label>
-            <input
-              id="cardLink"
-              type="url"
-              value={link}
-              onChange={(e) => {
-                setLink(e.target.value);
-                if (errors.link) {
-                  setErrors((prev) => ({ ...prev, link: '' }));
-                }
-              }}
-              onBlur={() => setErrors((prev) => ({ ...prev, link: validateLink(link) }))}
-              className={`text-input ${errors.link ? 'input-error' : ''}`}
-              placeholder="https://example.com"
-              autoComplete="off"
-            />
-            <span className={`error-message ${errors.link ? 'visible' : ''}`}>
-              {errors.link || 'Link tidak valid.'}
-            </span>
-          </div>
-
-          <div className="input-group">
-            <label>Upload gambar</label>
-            <div className="file-upload-wrapper">
+      <div className="login-wrapper">
+        <main className="card">
+          <form onSubmit={handleSubmit} noValidate>
+            <div className="input-group">
+              <label htmlFor="cardName">Card Name</label>
               <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleImageChange(e.target.files?.[0])}
+                id="cardName"
+                type="text"
+                placeholder="e.g. My Project"
+                value={title}
+                autoComplete="off"
+                onChange={(e) => {
+                  setTitle(e.target.value);
+                  if (errors.title) setErrors((prev) => ({ ...prev, title: '''' }));
+                }}
+                onBlur={() => setErrors((prev) => ({ ...prev, title: validateTitle(title) }))}
+                className={errors.title ? ''input-error'' : ''''}
+                disabled={isSubmitting}
               />
-              <div className={`upload-area ${hasImage ? 'has-file' : ''}`}>
-                <div className="plus-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="12" y1="5" x2="12" y2="19" />
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                  </svg>
-                </div>
+              <span className={`error-message ${errors.title ? ''visible'' : ''''}`}>
+                {errors.title || ''Card name is required.''}
+              </span>
+            </div>
+
+            <div className="input-group">
+              <label htmlFor="cardLink">Link</label>
+              <input
+                id="cardLink"
+                type="url"
+                placeholder="https://example.com"
+                value={link}
+                autoComplete="off"
+                onChange={(e) => {
+                  setLink(e.target.value);
+                  if (errors.link) setErrors((prev) => ({ ...prev, link: '''' }));
+                }}
+                onBlur={() => setErrors((prev) => ({ ...prev, link: validateLink(link) }))}
+                className={errors.link ? ''input-error'' : ''''}
+                disabled={isSubmitting}
+              />
+              <span className={`error-message ${errors.link ? ''visible'' : ''''}`}>
+                {errors.link || ''Please enter a valid URL.''}
+              </span>
+            </div>
+
+            <div className="input-group">
+              <label>Image</label>
+              <div className="file-upload-wrapper">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageChange(e.target.files?.[0])}
+                  disabled={isSubmitting}
+                />
                 <div
-                  className={`upload-text ${
-                    uploadTone === 'light' ? 'text-black' : uploadTone === 'dark' ? 'text-white' : ''
-                  }`}
+                  className={`upload-area ${hasImage ? ''has-file'' : ''''}`}
+                  style={{
+                    backgroundImage: hasImage ? `url(${imagePreview})` : ''none'',
+                  }}
                 >
-                  {uploadLabel}
+                  <div className="plus-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="12" y1="5" x2="12" y2="19" />
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                  </div>
+                  <div className={`upload-text ${uploadToneClass}`}>
+                    {uploadLabel}
+                  </div>
                 </div>
               </div>
+              <span className={`error-message ${errors.image ? ''visible'' : ''''}`}>
+                {errors.image || ''Please select an image.''}
+              </span>
             </div>
-            <span className={`error-message ${errors.image ? 'visible' : ''}`}>
-              {errors.image || 'Upload gambar terlebih dahulu.'}
-            </span>
-          </div>
 
-          {hasImage && (
-            <div className="image-preview">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={imagePreview} alt="Preview" />
+            <div className="actions">
+              <button
+                type="submit"
+                id="submitBtn"
+                className={isSubmitting ? ''loading'' : ''''}
+                disabled={isSubmitting}
+              >
+                <div className="spinner" />
+                <span>{isSubmitting ? ''Saving...'' : mode === ''edit'' ? ''Save Changes'' : ''Create Card''}</span>
+              </button>
+              <button
+                type="button"
+                className="btn-cancel"
+                id="cancelBtn"
+                onClick={onClose}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </button>
             </div>
-          )}
-
-          {generalError && (
-            <div className="general-error">
-              {generalError}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className={`submit-btn ${isSubmitting ? 'loading' : ''}`}
-          >
-            <div className="spinner" />
-            <span>{isSubmitting ? 'Menyimpan...' : initialCard ? 'Simpan Perubahan' : 'Tambah Card'}</span>
-          </button>
-        </form>
+          </form>
+        </main>
       </div>
 
       <style jsx>{`
-        .create-card-backdrop {
-          position: fixed;
-          inset: 0;
-          z-index: 50;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 16px;
-          background: radial-gradient(circle at 20% 20%, rgba(99, 101, 185, 0.08), transparent 32%),
-            radial-gradient(circle at 80% 0%, rgba(138, 140, 209, 0.08), transparent 32%),
-            rgba(7, 7, 13, 0.88);
-          backdrop-filter: blur(18px);
-        }
-
-        .create-card-card {
-          --card-bg: rgba(255, 255, 255, 0.04);
+        :global(:root) {
+          --bg-color: #0a0a0a;
+          --card-bg: rgba(255, 255, 255, 0.02);
           --card-border: rgba(255, 255, 255, 0.08);
+          --accent-primary: #6365b9;
+          --accent-hover: #7577c4;
+          --accent-focus-ring: rgba(99, 101, 185, 0.4);
+          --text-main: #ffffff;
+          --text-muted: #a1a1aa;
+          --text-error: #f87171;
           --input-bg: #141414;
           --input-border: #27272a;
           --input-border-hover: #3f3f46;
-          --text-muted: #a1a1aa;
-          --accent: #6365b9;
-          --accent-hover: #7577c4;
-          position: relative;
-          width: 100%;
-          max-width: 460px;
-          border-radius: 18px;
-          border: 1px solid var(--card-border);
-          background: var(--card-bg);
-          box-shadow: 0 18px 60px rgba(0, 0, 0, 0.55);
-          padding: 32px 32px 28px;
-          overflow: hidden;
+          --radius-card: 16px;
+          --radius-input: 8px;
+          --shadow-card: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
         }
 
-        .create-card-card::before {
-          content: '';
-          position: absolute;
+        .create-card-backdrop {
+          position: fixed;
           inset: 0;
-          background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(99, 101, 185, 0.05));
-          pointer-events: none;
-        }
-
-        .create-card-close {
-          position: absolute;
-          top: 12px;
-          right: 12px;
-          width: 42px;
-          height: 42px;
-          border-radius: 50%;
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          background: rgba(255, 255, 255, 0.04);
-          color: #f5f5f5;
-          font-size: 18px;
-          font-weight: 700;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-
-        .create-card-close:hover {
-          border-color: rgba(255, 255, 255, 0.2);
-          background: rgba(255, 255, 255, 0.08);
-        }
-
-        .card-header {
-          position: relative;
-          z-index: 1;
-          margin-bottom: 18px;
           display: flex;
-          flex-direction: column;
-          gap: 6px;
+          align-items: center;
+          justify-content: center;
+          background-color: rgba(0, 0, 0, 0.7);
+          z-index: 50;
+          padding: 20px;
         }
 
-        .eyebrow {
-          font-size: 11px;
-          letter-spacing: 0.18em;
-          text-transform: uppercase;
-          color: #8a8cd1;
-          font-weight: 700;
+        .login-wrapper {
+          width: 100%;
+          display: flex;
+          justify-content: center;
         }
 
-        .card-header h3 {
-          font-size: 26px;
-          font-weight: 700;
-          letter-spacing: -0.01em;
-        }
-
-        .subtitle {
-          font-size: 14px;
-          color: rgba(255, 255, 255, 0.75);
-        }
-
-        .mode-switch {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
+        .card {
+          background: var(--card-bg);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
           border: 1px solid var(--card-border);
-          border-radius: 12px;
-          overflow: hidden;
-          background: rgba(255, 255, 255, 0.02);
-          margin-bottom: 10px;
-        }
-
-        .mode-btn {
-          padding: 12px;
-          text-align: center;
-          cursor: pointer;
-          font-weight: 700;
-          font-size: 14px;
-          color: var(--text-muted);
-          background: transparent;
-          border: none;
-          transition: all 0.25s ease;
-        }
-
-        .mode-btn.active {
-          color: #fff;
-          background: rgba(99, 101, 185, 0.12);
-          box-shadow: inset 0 0 0 1px rgba(99, 101, 185, 0.45);
-        }
-
-        .mode-btn:disabled {
-          cursor: not-allowed;
-          opacity: 0.5;
-        }
-
-        .create-card-form {
-          position: relative;
-          z-index: 1;
+          border-radius: var(--radius-card);
+          padding: 40px;
+          width: 100%;
+          max-width: 420px;
+          box-shadow: var(--shadow-card);
           display: flex;
           flex-direction: column;
-          gap: 18px;
+          gap: 24px;
+          opacity: 0;
+          transform: translateY(20px);
+          animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          position: relative;
+        }
+
+        @keyframes fadeUp {
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        form {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          width: 100%;
         }
 
         .input-group {
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 6px;
+          position: relative;
         }
 
         .input-group label {
           font-size: 13px;
-          font-weight: 600;
+          font-weight: 500;
           color: var(--text-muted);
+          margin-left: 2px;
         }
 
-        .text-input {
+        input[type="text"],
+        input[type="url"] {
           width: 100%;
-          border-radius: 10px;
+          background-color: var(--input-bg);
           border: 1px solid var(--input-border);
-          background: var(--input-bg);
+          border-radius: var(--radius-input);
           padding: 12px 14px;
-          color: #fff;
           font-size: 15px;
+          color: var(--text-main);
+          font-family: inherit;
           outline: none;
           transition: all 0.2s ease;
         }
 
-        .text-input::placeholder {
+        input::placeholder {
           color: #52525b;
         }
 
-        .text-input:hover {
+        input:hover {
           border-color: var(--input-border-hover);
         }
 
-        .text-input:focus {
-          border-color: var(--accent);
-          box-shadow: 0 0 0 3px rgba(99, 101, 185, 0.35);
+        input:focus {
+          border-color: var(--accent-primary);
+          box-shadow: 0 0 0 3px var(--accent-focus-ring);
         }
 
-        .input-error {
-          border-color: #f87171;
+        input.input-error {
+          border-color: var(--text-error);
         }
-
-        .input-error:focus {
+        input.input-error:focus {
           box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.2);
         }
 
         .error-message {
-          min-height: 16px;
           font-size: 12px;
-          color: #f87171;
+          color: var(--text-error);
+          min-height: 0;
+          height: 0;
           opacity: 0;
-          transform: translateY(-4px);
-          transition: all 0.18s ease;
+          transform: translateY(-5px);
+          transition: all 0.2s ease;
+          margin-left: 2px;
+          overflow: hidden;
         }
 
         .error-message.visible {
+          height: auto;
+          min-height: 18px;
           opacity: 1;
           transform: translateY(0);
         }
@@ -1282,33 +1152,41 @@ function AddCardModal({
         .file-upload-wrapper {
           position: relative;
           width: 100%;
-          height: 110px;
+          height: 100px;
         }
 
         .file-upload-wrapper input[type="file"] {
           position: absolute;
-          inset: 0;
+          left: 0;
+          top: 0;
+          width: 100%;
+          height: 100%;
           opacity: 0;
           cursor: pointer;
-          z-index: 2;
+          z-index: 10;
         }
 
         .upload-area {
-          position: relative;
-          inset: 0;
-          height: 100%;
-          border-radius: 10px;
-          border: 2px dashed var(--input-border);
-          background: rgba(20, 20, 20, 0.45);
           display: flex;
+          flex-direction: column;
           align-items: center;
           justify-content: center;
+          width: 100%;
+          height: 100%;
+          background: rgba(20, 20, 20, 0.4);
+          border: 2px dashed var(--input-border);
+          border-radius: var(--radius-input);
+          transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+          position: relative;
           overflow: hidden;
-          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          text-align: center;
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
         }
 
         .file-upload-wrapper:hover .upload-area:not(.has-file) {
-          border-color: var(--accent);
+          border-color: var(--accent-primary);
           background: rgba(99, 101, 185, 0.08);
           transform: translateY(-2px);
         }
@@ -1317,12 +1195,13 @@ function AddCardModal({
           position: absolute;
           top: 50%;
           left: 50%;
-          width: 34px;
-          height: 34px;
-          color: var(--accent);
-          opacity: 0;
           transform: translate(-50%, -50%) scale(0.2) rotate(-45deg);
+          color: var(--accent-primary);
+          opacity: 0;
+          width: 32px;
+          height: 32px;
           transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+          z-index: 2;
         }
 
         .plus-icon svg {
@@ -1337,127 +1216,106 @@ function AddCardModal({
         }
 
         .upload-text {
-          position: relative;
-          z-index: 1;
-          color: var(--text-muted);
           font-size: 14px;
           font-weight: 600;
           transition: all 0.3s ease;
+          position: relative;
+          z-index: 2;
+          padding: 4px 8px;
+          border-radius: 4px;
+          color: var(--text-muted);
         }
 
         .file-upload-wrapper:hover .upload-area:not(.has-file) .upload-text {
           opacity: 0;
-          transform: translateY(14px);
+          transform: translateY(15px);
         }
 
         .upload-area.has-file {
           border-style: solid;
-          border-color: var(--accent);
-          background: rgba(99, 101, 185, 0.06);
-        }
-
-        .upload-area.has-file .upload-text {
-          color: #fff;
-          opacity: 1;
-          transform: none;
+          border-color: var(--accent-primary);
         }
 
         .upload-area.has-file .plus-icon {
           display: none;
         }
 
-        .image-preview {
-          width: 100%;
-          height: 170px;
-          border-radius: 12px;
-          overflow: hidden;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        .text-white {
+          color: #ffffff !important;
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
         }
 
-        .image-preview img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          display: block;
+        .text-black {
+          color: #000000 !important;
+          text-shadow: 0 1px 3px rgba(255, 255, 255, 0.6);
         }
 
-        .general-error {
-          border-radius: 10px;
-          border: 1px solid rgba(248, 113, 113, 0.4);
-          background: rgba(248, 113, 113, 0.08);
-          color: #fecdd3;
-          padding: 10px 12px;
-          font-size: 13px;
-          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-        }
-
-        .submit-btn {
-          width: 100%;
-          border: none;
-          border-radius: 10px;
-          background: linear-gradient(135deg, #6365b9, #8a8cd1);
-          color: #fff;
-          font-weight: 700;
-          font-size: 15px;
-          padding: 12px 14px;
-          cursor: pointer;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
+        .actions {
+          display: flex;
           gap: 10px;
-          transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-          box-shadow: 0 10px 25px rgba(99, 101, 185, 0.35);
+          margin-top: 4px;
         }
 
-        .submit-btn:hover:not(:disabled) {
-          background: linear-gradient(135deg, var(--accent-hover), #9a9cd8);
+        button {
+          flex: 1;
+          padding: 12px;
+          border-radius: var(--radius-input);
+          font-size: 15px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        button[type="submit"] {
+          background-color: var(--accent-primary);
+          color: white;
+          border: none;
+        }
+
+        button[type="submit"]:hover:not(:disabled) {
+          background-color: var(--accent-hover);
           transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(99, 101, 185, 0.3);
         }
 
-        .submit-btn:active:not(:disabled) {
-          transform: translateY(0);
-        }
-
-        .submit-btn:disabled {
-          opacity: 0.65;
-          cursor: not-allowed;
-        }
-
-        .spinner {
-          width: 16px;
-          height: 16px;
-          border-radius: 50%;
-          border: 2px solid rgba(255, 255, 255, 0.3);
-          border-top-color: #fff;
-          animation: spin 0.8s linear infinite;
+        button.btn-cancel {
+          background-color: transparent;
+          color: var(--text-muted);
+          border: 1px solid var(--input-border);
           display: none;
         }
 
-        .submit-btn.loading .spinner {
-          display: inline-block;
+        button.btn-cancel:hover:not(:disabled) {
+          border-color: var(--text-error);
+          color: var(--text-error);
         }
 
-        .submit-btn.loading span {
-          opacity: 0.9;
+        .spinner {
+          display: inline-block;
+          width: 16px;
+          height: 16px;
+          border: 2px solid rgba(255, 255, 255, 0.3);
+          border-radius: 50%;
+          border-top-color: #fff;
+          animation: spin 0.8s linear infinite;
+          margin-right: 8px;
+          vertical-align: middle;
+          display: none;
         }
 
         @keyframes spin {
-          to {
-            transform: rotate(360deg);
-          }
+          to { transform: rotate(360deg); }
         }
 
-        @media (max-width: 520px) {
-          .create-card-card {
-            padding: 28px 22px;
-          }
+        button.loading .spinner {
+          display: inline-block;
+        }
+        button.loading span {
+          opacity: 0.8;
         }
       `}
       </style>
     </div>
   );
 }
-
-
 
