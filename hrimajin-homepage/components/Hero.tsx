@@ -841,48 +841,50 @@ function AddCardModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="relative w-full max-w-lg rounded-2xl border border-white/10 bg-[#0c0c12] p-6 shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-[#07070d]/85 via-[#0a0a10]/80 to-[#0c0c14]/85 backdrop-blur-xl p-4">
+      <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-7 shadow-[0_18px_60px_rgba(0,0,0,0.55)] backdrop-blur-2xl">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(99,101,185,0.12),transparent_35%),radial-gradient(circle_at_80%_0%,rgba(138,140,209,0.12),transparent_32%)]" />
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-full bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-gray-300 transition hover:bg-white/10"
+          aria-label="Close"
+          className="absolute right-4 top-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/5 text-base font-semibold text-white/80 transition hover:border-white/30 hover:bg-white/10 hover:text-white"
         >
-          Close
+          X
         </button>
-        <div className="mb-4">
-          <p className="text-xs uppercase tracking-[0.16em] text-[#8a8cd1]">
+        <div className="relative z-10 mb-6 space-y-1">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-[#8a8cd1]">
             {initialCard ? 'Edit Card' : 'New Card'}
           </p>
-          <h3 className="text-2xl font-bold text-white">
+          <h3 className="text-2xl font-bold text-white tracking-tight">
             {initialCard ? 'Edit Item' : 'Tambah Item'}
           </h3>
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-white/70">
             Isi nama, link, dan unggah gambar untuk kartu ini.
           </p>
         </div>
 
-        <form className="space-y-4" onSubmit={handleSubmit}>
+        <form className="relative z-10 space-y-5" onSubmit={handleSubmit}>
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-200">Nama item</label>
+            <label className="text-sm font-semibold text-white/80">Nama item</label>
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full rounded-lg border border-white/10 bg-[#0f0f1a] px-3 py-2 text-sm text-white outline-none ring-2 ring-transparent transition focus:border-[#6365b9] focus:ring-[#6365b9]/30"
+              className="w-full rounded-xl border border-white/10 bg-white/5 px-3.5 py-3 text-sm text-white outline-none ring-2 ring-transparent transition focus:border-[#6365b9] focus:ring-[#6365b9]/35 placeholder:text-white/40"
               placeholder="Contoh: Employee Portal"
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-200">Link</label>
+            <label className="text-sm font-semibold text-white/80">Link</label>
             <input
               value={link}
               onChange={(e) => setLink(e.target.value)}
-              className="w-full rounded-lg border border-white/10 bg-[#0f0f1a] px-3 py-2 text-sm text-white outline-none ring-2 ring-transparent transition focus:border-[#6365b9] focus:ring-[#6365b9]/30"
+              className="w-full rounded-xl border border-white/10 bg-white/5 px-3.5 py-3 text-sm text-white outline-none ring-2 ring-transparent transition focus:border-[#6365b9] focus:ring-[#6365b9]/35 placeholder:text-white/40"
               placeholder="https://example.com"
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-200">Upload gambar</label>
-            <div className="rounded-lg border border-dashed border-white/15 bg-[#0f0f1a] p-4">
+            <label className="text-sm font-semibold text-white/80">Upload gambar</label>
+            <div className="rounded-xl border border-dashed border-white/15 bg-white/5 p-4">
               <input
                 type="file"
                 accept="image/*"
@@ -894,10 +896,10 @@ function AddCardModal({
                     setImagePreview(preview);
                   }
                 }}
-                className="w-full text-sm text-gray-300 file:mr-3 file:rounded-md file:border-0 file:bg-[#6365b9] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white file:transition file:hover:bg-[#4a4c91]"
+                className="w-full text-sm text-white/80 file:mr-3 file:rounded-lg file:border-0 file:bg-[#6365b9] file:px-3.5 file:py-2.5 file:text-sm file:font-semibold file:text-white file:transition file:hover:bg-[#4a4c91]"
               />
               {imagePreview && (
-                <div className="mt-3 overflow-hidden rounded-lg border border-white/10">
+                <div className="mt-3 overflow-hidden rounded-lg border border-white/10 shadow-inner shadow-black/40">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={imagePreview} alt="Preview" className="h-40 w-full object-cover" />
                 </div>
@@ -906,7 +908,7 @@ function AddCardModal({
           </div>
 
           {error && (
-            <div className="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+            <div className="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-200 shadow-inner shadow-red-900/20">
               {error}
             </div>
           )}
@@ -914,7 +916,7 @@ function AddCardModal({
           <button
             type="submit"
             disabled={isSubmitting}
-            className="flex w-full items-center justify-center rounded-lg bg-[#6365b9] px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-[#6365b9]/40 transition hover:-translate-y-0.5 hover:bg-[#4a4c91] focus:outline-none focus:ring-2 focus:ring-[#8a8cd1] focus:ring-offset-2 focus:ring-offset-[#0c0c12] disabled:cursor-not-allowed disabled:opacity-60"
+            className="flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-[#6365b9] via-[#6f71c0] to-[#8a8cd1] px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-[#6365b9]/35 transition hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(99,101,185,0.45)] focus:outline-none focus:ring-2 focus:ring-[#8a8cd1] focus:ring-offset-2 focus:ring-offset-[#0b0b11] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isSubmitting ? 'Menyimpan...' : 'Tambah Card'}
           </button>

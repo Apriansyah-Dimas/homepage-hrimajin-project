@@ -139,6 +139,9 @@ export default function LoginPage() {
 
   return (
     <main className="login-page">
+      <button type="button" className="close-button" onClick={() => router.push('/')}>
+        X
+      </button>
       <div className="login-wrapper">
         <section className="card">
           <header className="header">
@@ -263,6 +266,31 @@ export default function LoginPage() {
           padding: 24px 16px;
           line-height: 1.5;
           -webkit-font-smoothing: antialiased;
+          position: relative;
+        }
+
+        .close-button {
+          position: fixed;
+          top: 16px;
+          right: 16px;
+          width: 38px;
+          height: 38px;
+          border-radius: 999px;
+          border: 1px solid var(--card-border);
+          background: transparent;
+          color: var(--text-main);
+          font-weight: 600;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+          z-index: 10;
+        }
+
+        .close-button:hover {
+          background-color: var(--card-border);
+          border-color: var(--input-border-hover);
         }
 
         .login-wrapper {
