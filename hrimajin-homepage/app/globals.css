@@ -62,193 +62,106 @@ body {
 }
 
 /* Login button – conic glow, purple dominant */
-.login-fancy-button {
-  --h-button: 48px;
-  --round: 0.9rem;
+.login-blob-btn {
+  --btn-color: #6365b9;
   position: relative;
+  z-index: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 14px 22px;
+  padding: 18px 42px;
+  text-transform: uppercase;
+  color: var(--btn-color);
   font-size: 15px;
-  font-weight: 700;
-  color: white;
-  background: radial-gradient(
-      65.28% 65.28% at 50% 100%,
-      rgba(99, 101, 185, 0.85) 0%,
-      rgba(99, 101, 185, 0) 100%
-    ),
-    linear-gradient(0deg, #6365b9, #6365b9);
-  border-radius: var(--round);
-  border: none;
+  font-weight: 800;
+  background-color: transparent;
   outline: none;
-  overflow: hidden;
+  border: none;
+  transition: color 0.5s;
   cursor: pointer;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-  box-shadow: 0 12px 30px rgba(99, 101, 185, 0.28);
+  border-radius: 30px;
   text-decoration: none;
 }
 
-.login-fancy-button:hover {
-  transform: translateY(-2px);
-}
-
-.login-fancy-button:active {
-  transform: scale(0.98);
-}
-
-.login-fancy-button::before,
-.login-fancy-button::after {
+.login-blob-btn::before {
   content: "";
-  position: absolute;
-  inset: var(--space);
-  transition: all 0.5s ease-in-out;
-  border-radius: calc(var(--round) - var(--space));
-  z-index: 0;
-}
-
-.login-fancy-button::before {
-  --space: 1px;
-  background: linear-gradient(
-    177.95deg,
-    rgba(255, 255, 255, 0.18) 0%,
-    rgba(255, 255, 255, 0) 100%
-  );
-}
-
-.login-fancy-button::after {
-  --space: 3px;
-  background: radial-gradient(
-      65.28% 65.28% at 50% 100%,
-      rgba(138, 140, 209, 0.9) 0%,
-      rgba(138, 140, 209, 0) 100%
-    ),
-    linear-gradient(0deg, #4a4c91, #6365b9);
-}
-
-.login-fancy-fold {
   z-index: 1;
   position: absolute;
+  left: 0;
   top: 0;
-  right: 0;
-  height: 1rem;
-  width: 1rem;
-  display: inline-block;
-  transition: all 0.5s ease-in-out;
-  background: radial-gradient(
-    100% 75% at 55%,
-    rgba(138, 140, 209, 0.9) 0%,
-    rgba(138, 140, 209, 0) 100%
-  );
-  box-shadow: 0 0 3px black;
-  border-bottom-left-radius: 0.5rem;
-  border-top-right-radius: var(--round);
-}
-
-.login-fancy-fold::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 150%;
-  height: 150%;
-  transform: rotate(45deg) translateX(0%) translateY(-18px);
-  background-color: #d8d9ff;
-  pointer-events: none;
-}
-
-.login-fancy-button:hover .login-fancy-fold {
-  margin-top: -1rem;
-  margin-right: -1rem;
-}
-
-.login-fancy-points {
-  overflow: hidden;
   width: 100%;
   height: 100%;
-  pointer-events: none;
+  border: 2px solid var(--btn-color);
+  border-radius: 30px;
+}
+
+.login-blob-btn::after {
+  content: "";
+  z-index: -2;
   position: absolute;
-  z-index: 1;
-}
-
-.login-fancy-point {
-  bottom: -10px;
-  position: absolute;
-  animation: login-floating-points infinite ease-in-out;
-  pointer-events: none;
-  width: 2px;
-  height: 2px;
-  background-color: #fff;
-  border-radius: 9999px;
-}
-
-@keyframes login-floating-points {
-  0% {
-    transform: translateY(0);
-  }
-  85% {
-    opacity: 0;
-  }
-  100% {
-    transform: translateY(-55px);
-    opacity: 0;
-  }
-}
-
-.login-fancy-point:nth-child(1) { left: 10%; opacity: 1; animation-duration: 2.2s; animation-delay: 0.2s; }
-.login-fancy-point:nth-child(2) { left: 30%; opacity: 0.7; animation-duration: 2.4s; animation-delay: 0.5s; }
-.login-fancy-point:nth-child(3) { left: 25%; opacity: 0.8; animation-duration: 2.1s; animation-delay: 0.1s; }
-.login-fancy-point:nth-child(4) { left: 44%; opacity: 0.6; animation-duration: 2.0s; }
-.login-fancy-point:nth-child(5) { left: 50%; opacity: 1; animation-duration: 1.9s; }
-.login-fancy-point:nth-child(6) { left: 75%; opacity: 0.5; animation-duration: 1.5s; animation-delay: 1.4s; }
-.login-fancy-point:nth-child(7) { left: 88%; opacity: 0.9; animation-duration: 2.15s; animation-delay: 0.2s; }
-.login-fancy-point:nth-child(8) { left: 58%; opacity: 0.8; animation-duration: 2.2s; animation-delay: 0.2s; }
-.login-fancy-point:nth-child(9) { left: 98%; opacity: 0.6; animation-duration: 2.6s; animation-delay: 0.1s; }
-.login-fancy-point:nth-child(10) { left: 65%; opacity: 1; animation-duration: 2.4s; animation-delay: 0.2s; }
-
-.login-fancy-inner {
-  z-index: 2;
-  gap: 8px;
-  position: relative;
+  left: 3px;
+  top: 3px;
   width: 100%;
-  color: white;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 1.5;
+  height: 100%;
+  transition: all 0.3s 0.2s;
+  border-radius: 30px;
+}
+
+.login-blob-btn:hover {
+  color: #ffffff;
+  border-radius: 30px;
+}
+
+.login-blob-btn:hover::after {
+  transition: all 0.3s;
+  left: 0;
+  top: 0;
+  border-radius: 30px;
+}
+
+.login-blob-inner {
+  z-index: -1;
+  overflow: hidden;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 30px;
+  background: #0a0a0a;
+}
+
+.login-blob-blobs {
+  position: relative;
+  display: block;
+  height: 100%;
+  filter: url('#login-goo');
+}
+
+.login-blob-blob {
+  position: absolute;
+  top: 2px;
+  width: 25%;
+  height: 100%;
+  background: var(--btn-color);
+  border-radius: 100%;
+  transform: translate3d(0, 150%, 0) scale(1.4);
+  transition: transform 0.45s;
+}
+
+.login-blob-blob:nth-child(1) { left: 0%; transition-delay: 0s; }
+.login-blob-blob:nth-child(2) { left: 30%; transition-delay: 0.08s; }
+.login-blob-blob:nth-child(3) { left: 60%; transition-delay: 0.16s; }
+.login-blob-blob:nth-child(4) { left: 90%; transition-delay: 0.24s; }
+
+.login-blob-btn:hover .login-blob-blob {
+  transform: translateZ(0) scale(1.4);
+}
+
+.login-blob-label {
+  position: relative;
+  z-index: 2;
+  font-weight: 800;
   letter-spacing: 0.05em;
-  transition: color 0.2s ease-in-out;
-}
-
-.login-fancy-icon {
-  width: 18px;
-  height: 18px;
-  transition: fill 0.1s linear;
-}
-
-.login-fancy-button:focus .login-fancy-icon {
-  fill: white;
-}
-
-.login-fancy-button:hover .login-fancy-icon {
-  fill: transparent;
-  animation: login-dasharray 1s linear forwards, login-filled 0.1s linear forwards 0.95s;
-}
-
-@keyframes login-dasharray {
-  from {
-    stroke-dasharray: 0 0 0 0;
-  }
-  to {
-    stroke-dasharray: 68 68 0 0;
-  }
-}
-
-@keyframes login-filled {
-  to {
-    fill: white;
-  }
+  color: inherit;
 }
