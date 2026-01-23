@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import {
   motion,
@@ -673,7 +673,7 @@ function Card({ title, link, imageSrc, index, onEdit, onDelete, isEditable }: Ca
                 e.stopPropagation();
                 onEdit();
               }}
-              className="rounded-full bg-black/50 px-3 py-1 text-xs font-semibold text-white backdrop-blur border border-white/15 transition hover:bg-black/70"
+              className="rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-semibold text-white backdrop-blur-md transition hover:border-white/30 hover:bg-white/15"
             >
               Edit
             </button>
@@ -684,7 +684,7 @@ function Card({ title, link, imageSrc, index, onEdit, onDelete, isEditable }: Ca
                   e.stopPropagation();
                   onDelete();
                 }}
-                className="rounded-full bg-red-500/80 px-3 py-1 text-xs font-semibold text-white backdrop-blur border border-red-400/60 transition hover:bg-red-600"
+                className="rounded-full border border-red-400/60 bg-red-500/80 px-3.5 py-1.5 text-xs font-semibold text-white backdrop-blur-md transition hover:bg-red-500"
               >
                 Delete
               </button>
@@ -736,18 +736,18 @@ function AddCardTile({
       transition={{ delay: index * 0.1, duration: 0.6 }}
       className="w-full h-full max-w-[360px] sm:max-w-[420px] lg:max-w-[520px] xl:max-w-none xl:min-w-[200px]"
     >
-      <button
+            <button
         onClick={onClick}
-        className="group relative flex h-[260px] w-full items-center justify-center overflow-hidden rounded-3xl border-2 border-dashed border-white/20 bg-white/5 text-white transition hover:-translate-y-1 hover:border-[#6365b9]/70 hover:bg-[#0f0f1a] focus:outline-none focus:ring-2 focus:ring-[#6365b9]"
+        className="group relative flex h-[260px] w-full items-center justify-center overflow-hidden rounded-3xl border border-white/15 bg-white/5 text-white shadow-[0_14px_50px_rgba(0,0,0,0.45)] backdrop-blur-xl transition hover:-translate-y-1 hover:border-[#6365b9]/70 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-[#6365b9]/60"
       >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(99,101,185,0.08),transparent_40%),radial-gradient(circle_at_70%_70%,rgba(138,140,209,0.08),transparent_40%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(99,101,185,0.12),transparent_40%),radial-gradient(circle_at_70%_70%,rgba(138,140,209,0.12),transparent_40%),linear-gradient(135deg,rgba(255,255,255,0.05),rgba(99,101,185,0.08))]" />
         <div className="relative z-10 flex flex-col items-center gap-3">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#6365b9]/20 text-3xl font-bold text-[#8a8cd1] transition group-hover:scale-105 group-hover:bg-[#6365b9]/30">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/15 bg-[#6365b9]/20 text-3xl font-bold text-[#8a8cd1] shadow-inner shadow-black/20 transition group-hover:scale-105 group-hover:bg-[#6365b9]/30">
             +
           </div>
           <span className="text-lg font-semibold">Add new card</span>
-          <span className="text-xs uppercase tracking-[0.2em] text-gray-400">
-            Name · Link · Image
+          <span className="text-xs uppercase tracking-[0.2em] text-white/60">
+            Name / Link / Image
           </span>
         </div>
       </button>
@@ -925,3 +925,6 @@ function AddCardModal({
     </div>
   );
 }
+
+
+
