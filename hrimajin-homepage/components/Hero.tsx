@@ -773,16 +773,26 @@ function AddCardModal({
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<{ title: string; link: string; image: string }>({
+    title: '',
+    link: '',
+    image: '',
+  });
+  const [generalError, setGeneralError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isOpen) {
+    const resetState = () => {
       setTitle('');
       setLink('');
       setImageFile(null);
       setImagePreview('');
-      setError(null);
+      setErrors({ title: '', link: '', image: '' });
+      setGeneralError(null);
       setIsSubmitting(false);
+    };
+
+    if (!isOpen) {
+      resetState();
       return;
     }
 
@@ -791,15 +801,11 @@ function AddCardModal({
       setLink(initialCard.link);
       setImagePreview(initialCard.imageSrc);
       setImageFile(null);
-      setError(null);
+      setErrors({ title: '', link: '', image: '' });
+      setGeneralError(null);
       setIsSubmitting(false);
     } else {
-      setTitle('');
-      setLink('');
-      setImageFile(null);
-      setImagePreview('');
-      setError(null);
-      setIsSubmitting(false);
+      resetState();
     }
   }, [isOpen, initialCard]);
 
@@ -811,18 +817,50 @@ function AddCardModal({
       reader.readAsDataURL(file);
     });
 
+  const truncateFileName = (name: string) =>
+    name.length > 28 ? `${name.slice(0, 25)}...` : name;
+
+  const validateTitle = (value: string) =>
+    value.trim() ? '' : 'Nama item wajib diisi.';
+
+  const validateLink = (value: string) => {
+    if (!value.trim()) return 'Link wajib diisi.';
+    try {
+      // eslint-disable-next-line no-new
+      new URL(value);
+      return '';
+    } catch (_) {
+      return 'Link tidak valid.';
+    }
+  };
+
+  const validateImage = () => (imageFile || imagePreview ? '' : 'Upload gambar terlebih dahulu.');
+
+  const handleImageChange = (file?: File) => {
+    if (!file) {
+      setImageFile(null);
+      setImagePreview(initialCard?.imageSrc ?? '');
+      setErrors((prev) => ({ ...prev, image: '' }));
+      return;
+    }
+    setImageFile(file);
+    const preview = URL.createObjectURL(file);
+    setImagePreview(preview);
+    setErrors((prev) => ({ ...prev, image: '' }));
+  };
+
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    setError(null);
+    setGeneralError(null);
 
-    if (!title.trim() || !link.trim()) {
-      setError('Nama dan link wajib diisi.');
-      return;
-    }
-    if (!imageFile && !initialCard) {
-      setError('Upload gambar terlebih dahulu.');
-      return;
-    }
+    const validationResult = {
+      title: validateTitle(title),
+      link: validateLink(link),
+      image: validateImage(),
+    };
+    setErrors(validationResult);
+    const hasError = Object.values(validationResult).some(Boolean);
+    if (hasError) return;
 
     setIsSubmitting(true);
     try {
@@ -834,7 +872,7 @@ function AddCardModal({
         imageSrc: dataUrl,
       });
     } catch (_) {
-      setError('Gagal menambah card. Coba lagi.');
+      setGeneralError('Gagal menambah card. Coba lagi.');
     } finally {
       setIsSubmitting(false);
     }
@@ -842,88 +880,457 @@ function AddCardModal({
 
   if (!isOpen) return null;
 
+  const hasImage = Boolean(imageFile || imagePreview);
+  const uploadLabel = imageFile?.name
+    ? truncateFileName(imageFile.name)
+    : hasImage
+      ? 'Gambar terunggah'
+      : 'Upload Image';
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-[#07070d]/85 via-[#0a0a10]/80 to-[#0c0c14]/85 backdrop-blur-xl p-4">
-      <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-7 shadow-[0_18px_60px_rgba(0,0,0,0.55)] backdrop-blur-2xl">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(99,101,185,0.12),transparent_35%),radial-gradient(circle_at_80%_0%,rgba(138,140,209,0.12),transparent_32%)]" />
+    <div className="create-card-backdrop">
+      <div className="create-card-card">
         <button
           onClick={onClose}
           aria-label="Close"
-          className="absolute right-4 top-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/5 text-base font-semibold text-white/80 transition hover:border-white/30 hover:bg-white/10 hover:text-white"
+          className="create-card-close"
+          type="button"
         >
           X
         </button>
-        <div className="relative z-10 mb-6 space-y-1">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-[#8a8cd1]">
-            {initialCard ? 'Edit Card' : 'New Card'}
-          </p>
-          <h3 className="text-2xl font-bold text-white tracking-tight">
-            {initialCard ? 'Edit Item' : 'Tambah Item'}
-          </h3>
-          <p className="text-sm text-white/70">
-            Isi nama, link, dan unggah gambar untuk kartu ini.
-          </p>
+
+        <div className="card-header">
+          <p className="eyebrow">{initialCard ? 'Edit Card' : 'New Card'}</p>
+          <h3>{initialCard ? 'Edit Item' : 'Tambah Item'}</h3>
+          <p className="subtitle">Isi nama, link, dan unggah gambar untuk kartu ini.</p>
         </div>
 
-        <form className="relative z-10 space-y-5" onSubmit={handleSubmit}>
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-white/80">Nama item</label>
+        <form className="create-card-form" onSubmit={handleSubmit} noValidate>
+          <div className="input-group">
+            <label htmlFor="cardName">Nama item</label>
             <input
+              id="cardName"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-white/5 px-3.5 py-3 text-sm text-white outline-none ring-2 ring-transparent transition focus:border-[#6365b9] focus:ring-[#6365b9]/35 placeholder:text-white/40"
+              onChange={(e) => {
+                setTitle(e.target.value);
+                if (errors.title) {
+                  setErrors((prev) => ({ ...prev, title: '' }));
+                }
+              }}
+              onBlur={() => setErrors((prev) => ({ ...prev, title: validateTitle(title) }))}
+              className={`text-input ${errors.title ? 'input-error' : ''}`}
               placeholder="Contoh: Employee Portal"
+              autoComplete="off"
             />
+            <span className={`error-message ${errors.title ? 'visible' : ''}`}>
+              {errors.title || 'Nama item wajib diisi.'}
+            </span>
           </div>
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-white/80">Link</label>
+
+          <div className="input-group">
+            <label htmlFor="cardLink">Link</label>
             <input
+              id="cardLink"
+              type="url"
               value={link}
-              onChange={(e) => setLink(e.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-white/5 px-3.5 py-3 text-sm text-white outline-none ring-2 ring-transparent transition focus:border-[#6365b9] focus:ring-[#6365b9]/35 placeholder:text-white/40"
+              onChange={(e) => {
+                setLink(e.target.value);
+                if (errors.link) {
+                  setErrors((prev) => ({ ...prev, link: '' }));
+                }
+              }}
+              onBlur={() => setErrors((prev) => ({ ...prev, link: validateLink(link) }))}
+              className={`text-input ${errors.link ? 'input-error' : ''}`}
               placeholder="https://example.com"
+              autoComplete="off"
             />
+            <span className={`error-message ${errors.link ? 'visible' : ''}`}>
+              {errors.link || 'Link tidak valid.'}
+            </span>
           </div>
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-white/80">Upload gambar</label>
-            <div className="rounded-xl border border-dashed border-white/15 bg-white/5 p-4">
+
+          <div className="input-group">
+            <label>Upload gambar</label>
+            <div className="file-upload-wrapper">
               <input
                 type="file"
                 accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    setImageFile(file);
-                    const preview = URL.createObjectURL(file);
-                    setImagePreview(preview);
-                  }
-                }}
-                className="w-full text-sm text-white/80 file:mr-3 file:rounded-lg file:border-0 file:bg-[#6365b9] file:px-3.5 file:py-2.5 file:text-sm file:font-semibold file:text-white file:transition file:hover:bg-[#4a4c91]"
+                onChange={(e) => handleImageChange(e.target.files?.[0])}
               />
-              {imagePreview && (
-                <div className="mt-3 overflow-hidden rounded-lg border border-white/10 shadow-inner shadow-black/40">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={imagePreview} alt="Preview" className="h-40 w-full object-cover" />
+              <div className={`upload-area ${hasImage ? 'has-file' : ''}`}>
+                <div className="plus-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
                 </div>
-              )}
+                <div className="upload-text">{uploadLabel}</div>
+              </div>
             </div>
+            <span className={`error-message ${errors.image ? 'visible' : ''}`}>
+              {errors.image || 'Upload gambar terlebih dahulu.'}
+            </span>
           </div>
 
-          {error && (
-            <div className="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-200 shadow-inner shadow-red-900/20">
-              {error}
+          {hasImage && (
+            <div className="image-preview">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={imagePreview} alt="Preview" />
+            </div>
+          )}
+
+          {generalError && (
+            <div className="general-error">
+              {generalError}
             </div>
           )}
 
           <button
             type="submit"
             disabled={isSubmitting}
-            className="flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-[#6365b9] via-[#6f71c0] to-[#8a8cd1] px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-[#6365b9]/35 transition hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(99,101,185,0.45)] focus:outline-none focus:ring-2 focus:ring-[#8a8cd1] focus:ring-offset-2 focus:ring-offset-[#0b0b11] disabled:cursor-not-allowed disabled:opacity-60"
+            className={`submit-btn ${isSubmitting ? 'loading' : ''}`}
           >
-            {isSubmitting ? 'Menyimpan...' : 'Tambah Card'}
+            <div className="spinner" />
+            <span>{isSubmitting ? 'Menyimpan...' : initialCard ? 'Simpan Perubahan' : 'Tambah Card'}</span>
           </button>
         </form>
       </div>
+
+      <style jsx>{`
+        .create-card-backdrop {
+          position: fixed;
+          inset: 0;
+          z-index: 50;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 16px;
+          background: radial-gradient(circle at 20% 20%, rgba(99, 101, 185, 0.08), transparent 32%),
+            radial-gradient(circle at 80% 0%, rgba(138, 140, 209, 0.08), transparent 32%),
+            rgba(7, 7, 13, 0.88);
+          backdrop-filter: blur(18px);
+        }
+
+        .create-card-card {
+          --card-bg: rgba(255, 255, 255, 0.04);
+          --card-border: rgba(255, 255, 255, 0.08);
+          --input-bg: #141414;
+          --input-border: #27272a;
+          --input-border-hover: #3f3f46;
+          --text-muted: #a1a1aa;
+          --accent: #6365b9;
+          --accent-hover: #7577c4;
+          position: relative;
+          width: 100%;
+          max-width: 460px;
+          border-radius: 18px;
+          border: 1px solid var(--card-border);
+          background: var(--card-bg);
+          box-shadow: 0 18px 60px rgba(0, 0, 0, 0.55);
+          padding: 32px 32px 28px;
+          overflow: hidden;
+        }
+
+        .create-card-card::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(99, 101, 185, 0.05));
+          pointer-events: none;
+        }
+
+        .create-card-close {
+          position: absolute;
+          top: 12px;
+          right: 12px;
+          width: 42px;
+          height: 42px;
+          border-radius: 50%;
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          background: rgba(255, 255, 255, 0.04);
+          color: #f5f5f5;
+          font-size: 18px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .create-card-close:hover {
+          border-color: rgba(255, 255, 255, 0.2);
+          background: rgba(255, 255, 255, 0.08);
+        }
+
+        .card-header {
+          position: relative;
+          z-index: 1;
+          margin-bottom: 18px;
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+
+        .eyebrow {
+          font-size: 11px;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          color: #8a8cd1;
+          font-weight: 700;
+        }
+
+        .card-header h3 {
+          font-size: 26px;
+          font-weight: 700;
+          letter-spacing: -0.01em;
+        }
+
+        .subtitle {
+          font-size: 14px;
+          color: rgba(255, 255, 255, 0.75);
+        }
+
+        .create-card-form {
+          position: relative;
+          z-index: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 18px;
+        }
+
+        .input-group {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .input-group label {
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--text-muted);
+        }
+
+        .text-input {
+          width: 100%;
+          border-radius: 10px;
+          border: 1px solid var(--input-border);
+          background: var(--input-bg);
+          padding: 12px 14px;
+          color: #fff;
+          font-size: 15px;
+          outline: none;
+          transition: all 0.2s ease;
+        }
+
+        .text-input::placeholder {
+          color: #52525b;
+        }
+
+        .text-input:hover {
+          border-color: var(--input-border-hover);
+        }
+
+        .text-input:focus {
+          border-color: var(--accent);
+          box-shadow: 0 0 0 3px rgba(99, 101, 185, 0.35);
+        }
+
+        .input-error {
+          border-color: #f87171;
+        }
+
+        .input-error:focus {
+          box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.2);
+        }
+
+        .error-message {
+          min-height: 16px;
+          font-size: 12px;
+          color: #f87171;
+          opacity: 0;
+          transform: translateY(-4px);
+          transition: all 0.18s ease;
+        }
+
+        .error-message.visible {
+          opacity: 1;
+          transform: translateY(0);
+        }
+
+        .file-upload-wrapper {
+          position: relative;
+          width: 100%;
+          height: 110px;
+        }
+
+        .file-upload-wrapper input[type="file"] {
+          position: absolute;
+          inset: 0;
+          opacity: 0;
+          cursor: pointer;
+          z-index: 2;
+        }
+
+        .upload-area {
+          position: relative;
+          inset: 0;
+          height: 100%;
+          border-radius: 10px;
+          border: 2px dashed var(--input-border);
+          background: rgba(20, 20, 20, 0.45);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .file-upload-wrapper:hover .upload-area:not(.has-file) {
+          border-color: var(--accent);
+          background: rgba(99, 101, 185, 0.08);
+          transform: translateY(-2px);
+        }
+
+        .plus-icon {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 34px;
+          height: 34px;
+          color: var(--accent);
+          opacity: 0;
+          transform: translate(-50%, -50%) scale(0.2) rotate(-45deg);
+          transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .plus-icon svg {
+          width: 100%;
+          height: 100%;
+          stroke-width: 2;
+        }
+
+        .file-upload-wrapper:hover .upload-area:not(.has-file) .plus-icon {
+          opacity: 1;
+          transform: translate(-50%, -50%) scale(1) rotate(0deg);
+        }
+
+        .upload-text {
+          position: relative;
+          z-index: 1;
+          color: var(--text-muted);
+          font-size: 14px;
+          font-weight: 600;
+          transition: all 0.3s ease;
+        }
+
+        .file-upload-wrapper:hover .upload-area:not(.has-file) .upload-text {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+
+        .upload-area.has-file {
+          border-style: solid;
+          border-color: var(--accent);
+          background: rgba(99, 101, 185, 0.06);
+        }
+
+        .upload-area.has-file .upload-text {
+          color: #fff;
+          opacity: 1;
+          transform: none;
+        }
+
+        .upload-area.has-file .plus-icon {
+          display: none;
+        }
+
+        .image-preview {
+          width: 100%;
+          height: 170px;
+          border-radius: 12px;
+          overflow: hidden;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        }
+
+        .image-preview img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+
+        .general-error {
+          border-radius: 10px;
+          border: 1px solid rgba(248, 113, 113, 0.4);
+          background: rgba(248, 113, 113, 0.08);
+          color: #fecdd3;
+          padding: 10px 12px;
+          font-size: 13px;
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        }
+
+        .submit-btn {
+          width: 100%;
+          border: none;
+          border-radius: 10px;
+          background: linear-gradient(135deg, #6365b9, #8a8cd1);
+          color: #fff;
+          font-weight: 700;
+          font-size: 15px;
+          padding: 12px 14px;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+          box-shadow: 0 10px 25px rgba(99, 101, 185, 0.35);
+        }
+
+        .submit-btn:hover:not(:disabled) {
+          background: linear-gradient(135deg, var(--accent-hover), #9a9cd8);
+          transform: translateY(-2px);
+        }
+
+        .submit-btn:active:not(:disabled) {
+          transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+          opacity: 0.65;
+          cursor: not-allowed;
+        }
+
+        .spinner {
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          border: 2px solid rgba(255, 255, 255, 0.3);
+          border-top-color: #fff;
+          animation: spin 0.8s linear infinite;
+          display: none;
+        }
+
+        .submit-btn.loading .spinner {
+          display: inline-block;
+        }
+
+        .submit-btn.loading span {
+          opacity: 0.9;
+        }
+
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+
+        @media (max-width: 520px) {
+          .create-card-card {
+            padding: 28px 22px;
+          }
+        }
+      `}
+      </style>
     </div>
   );
 }
