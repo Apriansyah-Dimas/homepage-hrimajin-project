@@ -1016,8 +1016,8 @@ function AddCardModal({
       <style jsx>{`
         :global(:root) {
           --bg-color: #0a0a0a;
-          --card-bg: rgba(255, 255, 255, 0.02);
-          --card-border: rgba(255, 255, 255, 0.08);
+          --card-bg: #111119;
+          --card-border: #1f1f29;
           --accent-primary: #6365b9;
           --accent-hover: #7577c4;
           --accent-focus-ring: rgba(99, 101, 185, 0.4);
@@ -1318,4 +1318,3 @@ function AddCardModal({
     </div>
   );
 }
-
