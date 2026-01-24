@@ -277,7 +277,7 @@ export default function Hero() {
                     }}
                   >
                     {word}
-                    {index !== lineOneWords.length - 1 ? '\\u00a0' : ''}
+                    {index !== lineOneWords.length - 1 ? '\u00a0' : ''}
                   </span>
                 ))}
               </span>
@@ -295,7 +295,7 @@ export default function Hero() {
                     }}
                   >
                     {word}
-                    {index !== lineTwoWords.length - 1 ? '\\u00a0' : ''}
+                    {index !== lineTwoWords.length - 1 ? '\u00a0' : ''}
                   </span>
                 ))}
                 {' '}
@@ -426,7 +426,7 @@ export default function Hero() {
                     }}
                   >
                     {word}
-                    {index !== lineOneWords.length - 1 ? '\\u00a0' : ''}
+                    {index !== lineOneWords.length - 1 ? '\u00a0' : ''}
                   </motion.span>
                 ))}
               </span>
@@ -459,7 +459,7 @@ export default function Hero() {
                     }}
                   >
                     {word}
-                    {index !== lineTwoWords.length - 1 ? '\\u00a0' : ''}
+                    {index !== lineTwoWords.length - 1 ? '\u00a0' : ''}
                   </motion.span>
                 ))}
                 {' '}
