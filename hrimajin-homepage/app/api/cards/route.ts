@@ -7,16 +7,71 @@ type CardRow = {
   title: string;
   link: string;
   image_url: string | null;
+  direct_link_enabled?: boolean;
+  direct_path?: string | null;
   created_at?: string;
 };
 
 const BUCKET = 'cards';
+const RESERVED_PATHS = [
+  'login',
+  'logout',
+  'dashboard',
+  'api',
+  'assets',
+  'admin',
+  'static',
+  'favicon.ico',
+  '_next',
+  'vercel',
+  'robots.txt',
+  'sitemap.xml',
+];
+
+const sanitizeDirectPath = (value?: string | null) =>
+  (value ?? '').trim().replace(/^\/+/, '').toLowerCase();
+
+const validateDirectPath = (path: string, enabled: boolean) => {
+  if (!enabled) return { error: '' };
+  if (!path) return { error: 'Path wajib diisi.' };
+  if (!/^[a-z0-9_-]{2,60}$/.test(path)) {
+    return { error: 'Gunakan huruf kecil, angka, - atau _, 2-60 karakter.' };
+  }
+  if (RESERVED_PATHS.includes(path)) {
+    return { error: 'Path ini ter-reserve sistem.' };
+  }
+  return { error: '' };
+};
+
+async function assertDirectPathAvailable(path: string, excludeId?: string) {
+  const { data, error } = await supabaseServer
+    .from('cards')
+    .select('id')
+    .eq('direct_path', path)
+    .limit(1);
+
+  if (error) {
+    console.error('Supabase direct_path check error', error);
+    return { available: false, reason: 'error' as const };
+  }
+
+  if (!data || data.length === 0) {
+    return { available: true };
+  }
+
+  const existing = data[0];
+  if (excludeId && existing.id === excludeId) {
+    return { available: true };
+  }
+
+  return { available: false, reason: 'taken' as const };
+}
 
 export async function GET() {
   try {
     const { data, error } = await supabaseServer
       .from('cards')
-      .select('id,title,link,image_url')
+      .select('id,title,link,image_url,direct_link_enabled,direct_path')
       .order('created_at', { ascending: true });
 
     if (error) {
@@ -33,6 +88,8 @@ export async function GET() {
       title: row.title,
       link: row.link,
       imageSrc: row.image_url ?? '',
+      directLinkEnabled: Boolean(row.direct_link_enabled),
+      directPath: row.direct_path ?? null,
     }));
 
     return NextResponse.json({ cards }, { status: 200 });
@@ -44,13 +101,32 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const { title, link, imageDataUrl } = await request.json();
+    const {
+      title,
+      link,
+      imageDataUrl,
+      directLinkEnabled = false,
+      directPath,
+    } = await request.json();
 
     if (!title || !link || !imageDataUrl) {
       return NextResponse.json(
         { error: 'Title, link, dan imageDataUrl wajib diisi.' },
         { status: 400 },
       );
+    }
+
+    const normalizedPath = sanitizeDirectPath(directPath);
+    const directValidation = validateDirectPath(normalizedPath, directLinkEnabled);
+    if (directValidation.error) {
+      return NextResponse.json({ error: directValidation.error }, { status: 400 });
+    }
+
+    if (directLinkEnabled) {
+      const availability = await assertDirectPathAvailable(normalizedPath);
+      if (!availability.available) {
+        return NextResponse.json({ error: 'Path sudah dipakai.' }, { status: 409 });
+      }
     }
 
     const parsed = parseDataUrl(imageDataUrl as string);
@@ -82,8 +158,10 @@ export async function POST(request: Request) {
         title: String(title).trim(),
         link: String(link).trim(),
         image_url: imageUrl,
+        direct_link_enabled: Boolean(directLinkEnabled),
+        direct_path: directLinkEnabled ? normalizedPath : null,
       })
-      .select('id,title,link,image_url')
+      .select('id,title,link,image_url,direct_link_enabled,direct_path')
       .single();
 
     if (error || !inserted) {
@@ -98,6 +176,8 @@ export async function POST(request: Request) {
           title: inserted.title,
           link: inserted.link,
           imageSrc: inserted.image_url ?? '',
+          directLinkEnabled: Boolean(inserted.direct_link_enabled),
+          directPath: inserted.direct_path ?? null,
         },
       },
       { status: 201 },
@@ -110,13 +190,33 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
   try {
-    const { id, title, link, imageDataUrl } = await request.json();
+    const {
+      id,
+      title,
+      link,
+      imageDataUrl,
+      directLinkEnabled = false,
+      directPath,
+    } = await request.json();
 
     if (!id || !title || !link) {
       return NextResponse.json(
         { error: 'Id, title, dan link wajib diisi.' },
         { status: 400 },
       );
+    }
+
+    const normalizedPath = sanitizeDirectPath(directPath);
+    const directValidation = validateDirectPath(normalizedPath, directLinkEnabled);
+    if (directValidation.error) {
+      return NextResponse.json({ error: directValidation.error }, { status: 400 });
+    }
+
+    if (directLinkEnabled) {
+      const availability = await assertDirectPathAvailable(normalizedPath, id);
+      if (!availability.available) {
+        return NextResponse.json({ error: 'Path sudah dipakai.' }, { status: 409 });
+      }
     }
 
     let imageUrl: string | null = null;
@@ -149,6 +249,8 @@ export async function PUT(request: Request) {
     const updatePayload: Record<string, unknown> = {
       title: String(title).trim(),
       link: String(link).trim(),
+      direct_link_enabled: Boolean(directLinkEnabled),
+      direct_path: directLinkEnabled ? normalizedPath : null,
     };
 
     if (imageUrl) {
@@ -159,7 +261,7 @@ export async function PUT(request: Request) {
       .from('cards')
       .update(updatePayload)
       .eq('id', id)
-      .select('id,title,link,image_url')
+      .select('id,title,link,image_url,direct_link_enabled,direct_path')
       .single();
 
     if (error || !updated) {
@@ -174,6 +276,8 @@ export async function PUT(request: Request) {
           title: updated.title,
           link: updated.link,
           imageSrc: updated.image_url ?? '',
+          directLinkEnabled: Boolean(updated.direct_link_enabled),
+          directPath: updated.direct_path ?? null,
         },
       },
       { status: 200 },

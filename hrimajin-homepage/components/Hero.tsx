@@ -18,6 +18,8 @@ type CardData = {
   title: string;
   link: string;
   imageSrc: string;
+  directLinkEnabled?: boolean;
+  directPath?: string | null;
 };
 
 export default function Hero() {
@@ -186,6 +188,8 @@ export default function Hero() {
           title: payload.title,
           link: payload.link,
           imageDataUrl: payload.imageSrc,
+          directLinkEnabled: payload.directLinkEnabled ?? false,
+          directPath: payload.directPath ?? null,
         }),
       });
 
@@ -214,6 +218,8 @@ export default function Hero() {
           title: payload.title,
           link: payload.link,
           imageDataUrl: payload.imageSrc,
+          directLinkEnabled: payload.directLinkEnabled ?? false,
+          directPath: payload.directPath ?? null,
         }),
       });
 
@@ -767,24 +773,31 @@ function AddCardModal({
   const mode: 'create' | 'edit' = initialCard ? 'edit' : 'create';
   const [title, setTitle] = useState('');
   const [link, setLink] = useState('');
+  const [directLinkEnabled, setDirectLinkEnabled] = useState(false);
+  const [directPath, setDirectPath] = useState('');
+  const [pathStatus, setPathStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'reserved' | 'invalid'>('idle');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
   const [uploadTone, setUploadTone] = useState<'light' | 'dark' | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<{ title: string; link: string; image: string }>({
+  const [errors, setErrors] = useState<{ title: string; link: string; image: string; directPath: string }>({
     title: '',
     link: '',
     image: '',
+    directPath: '',
   });
 
   useEffect(() => {
     const resetState = () => {
       setTitle(initialCard?.title ?? '');
       setLink(initialCard?.link ?? '');
+      setDirectLinkEnabled(Boolean(initialCard?.directLinkEnabled));
+      setDirectPath(initialCard?.directPath ?? '');
+      setPathStatus('idle');
       setImageFile(null);
       setImagePreview(initialCard?.imageSrc ?? '');
       setUploadTone(null);
-      setErrors({ title: '', link: '', image: '' });
+      setErrors({ title: '', link: '', image: '', directPath: '' });
       setIsSubmitting(false);
     };
 
@@ -799,6 +812,62 @@ function AddCardModal({
     }
   }, [isOpen, initialCard]);
 
+  useEffect(() => {
+    if (!directLinkEnabled) {
+      setErrors((prev) => ({ ...prev, directPath: '' }));
+      setPathStatus('idle');
+      return;
+    }
+
+    const slug = sanitizeDirectPath(directPath);
+    const immediateError = validateDirectPath(slug, true);
+    if (immediateError) {
+      setErrors((prev) => ({ ...prev, directPath: immediateError }));
+      setPathStatus(immediateError.includes('reserve') ? 'reserved' : 'invalid');
+      return;
+    }
+
+    setErrors((prev) => ({ ...prev, directPath: '' }));
+    setPathStatus('checking');
+
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      try {
+        const url = `/api/direct-path/check?path=${encodeURIComponent(slug)}${initialCard?.id ? `&id=${initialCard.id}` : ''}`;
+        const res = await fetch(url, { signal: controller.signal });
+        const json = await res.json();
+        if (!res.ok) {
+          setPathStatus('invalid');
+          setErrors((prev) => ({ ...prev, directPath: json.error || 'Path tidak valid.' }));
+          return;
+        }
+        if (json.available) {
+          setPathStatus('available');
+          setErrors((prev) => ({ ...prev, directPath: '' }));
+        } else {
+          const reason = json.reason as string | undefined;
+          setPathStatus(reason === 'reserved' ? 'reserved' : 'taken');
+          setErrors((prev) => ({
+            ...prev,
+            directPath:
+              reason === 'reserved'
+                ? 'Path ini ter-reserve sistem.'
+                : 'Path sudah dipakai.',
+          }));
+        }
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        setPathStatus('invalid');
+        setErrors((prev) => ({ ...prev, directPath: 'Gagal mengecek path.' }));
+      }
+    }, 400);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [directPath, directLinkEnabled, initialCard?.id]);
+
   const readFileAsDataUrl = (file: File): Promise<string> =>
     new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -809,6 +878,37 @@ function AddCardModal({
 
   const truncateFileName = (name: string) =>
     name.length > 20 ? `${name.slice(0, 17)}...` : name;
+
+  const RESERVED_PATHS = [
+    'login',
+    'logout',
+    'dashboard',
+    'api',
+    'assets',
+    'admin',
+    'static',
+    'favicon.ico',
+    '_next',
+    'vercel',
+    'robots.txt',
+    'sitemap.xml',
+  ];
+
+  const sanitizeDirectPath = (value: string) =>
+    value.trim().replace(/^\/+/, '').toLowerCase();
+
+  const validateDirectPath = (value: string, enabled: boolean) => {
+    if (!enabled) return '';
+    const slug = sanitizeDirectPath(value);
+    if (!slug) return 'Path wajib diisi.';
+    if (!/^[a-z0-9_-]{2,60}$/.test(slug)) {
+      return 'Gunakan huruf kecil, angka, - atau _, 2-60 karakter.';
+    }
+    if (RESERVED_PATHS.includes(slug)) {
+      return 'Path ini ter-reserve sistem.';
+    }
+    return '';
+  };
 
   const validateTitle = (value: string) =>
     value.trim() ? '' : 'Card name is required.';
@@ -882,20 +982,26 @@ function AddCardModal({
     setImageFile(null);
     setImagePreview(initialCard?.imageSrc ?? '');
     setUploadTone(null);
-    setErrors({ title: '', link: '', image: '' });
+    setDirectLinkEnabled(Boolean(initialCard?.directLinkEnabled));
+    setDirectPath(initialCard?.directPath ?? '');
+    setPathStatus('idle');
+    setErrors({ title: '', link: '', image: '', directPath: '' });
     onClose();
   };
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
 
+    const normalizedPath = sanitizeDirectPath(directPath);
     const validationResult = {
       title: validateTitle(title),
       link: validateLink(link),
       image: validateImage(),
+      directPath: validateDirectPath(normalizedPath, directLinkEnabled),
     };
     setErrors(validationResult);
-    const hasError = Object.values(validationResult).some(Boolean);
+    const hasError = Object.values(validationResult).some(Boolean)
+      || (directLinkEnabled && pathStatus !== 'available' && pathStatus !== 'idle');
     if (hasError) return;
 
     setIsSubmitting(true);
@@ -910,6 +1016,8 @@ function AddCardModal({
         title: title.trim(),
         link: link.trim(),
         imageSrc: dataUrl,
+        directLinkEnabled,
+        directPath: directLinkEnabled ? normalizedPath : undefined,
       });
     } finally {
       setIsSubmitting(false);
@@ -962,11 +1070,30 @@ function AddCardModal({
             </div>
 
             <div className="input-group">
-              <label htmlFor="cardLink">Link</label>
+              <div className="label-row">
+                <label htmlFor="cardLink">Link</label>
+                <label className="toggle">
+                  <input
+                    type="checkbox"
+                    checked={directLinkEnabled}
+                    onChange={(e) => {
+                      const next = e.target.checked;
+                      setDirectLinkEnabled(next);
+                      if (!next) {
+                        setDirectPath('');
+                        setPathStatus('idle');
+                        setErrors((prev) => ({ ...prev, directPath: '' }));
+                      }
+                    }}
+                    disabled={isSubmitting}
+                  />
+                  <span>Direct Link</span>
+                </label>
+              </div>
               <input
                 id="cardLink"
                 type="url"
-                placeholder="https://example.com"
+                placeholder={directLinkEnabled ? 'https://target-url-panjang.com/...' : 'https://example.com'}
                 value={link}
                 autoComplete="off"
                 onChange={(e) => {
@@ -977,10 +1104,61 @@ function AddCardModal({
                 className={errors.link ? 'input-error' : ''}
                 disabled={isSubmitting}
               />
+              <span className="helper-text">
+                {directLinkEnabled
+                  ? 'Target URL penuh (contoh: link Google Spreadsheet).'
+                  : 'Link biasa akan dibuka langsung.'}
+              </span>
               <span className={`error-message ${errors.link ? 'visible' : ''}`}>
                 {errors.link || 'Please enter a valid URL.'}
               </span>
             </div>
+
+            {directLinkEnabled && (
+              <div className="input-group">
+                <label htmlFor="directPath">Short Path</label>
+                <input
+                  id="directPath"
+                  type="text"
+                  placeholder="spreadsheet"
+                  value={directPath}
+                  autoComplete="off"
+                  onChange={(e) => {
+                    const raw = e.target.value;
+                    const sanitized = sanitizeDirectPath(raw.replace(/^\/+/, ''));
+                    setDirectPath(sanitized);
+                    if (errors.directPath) setErrors((prev) => ({ ...prev, directPath: '' }));
+                  }}
+                onBlur={() => {
+                  const normalized = sanitizeDirectPath(directPath);
+                  setDirectPath(normalized);
+                  setErrors((prev) => ({
+                    ...prev,
+                    directPath: validateDirectPath(normalized, true),
+                  }));
+                }}
+                  className={errors.directPath ? 'input-error' : ''}
+                  disabled={isSubmitting}
+                />
+                <div className="helper-row">
+                  <span className="helper-text">
+                    Hanya huruf kecil, angka, -, _ (2-60). Tanpa spasi.
+                  </span>
+                  <span className="status">
+                    {pathStatus === 'checking' && 'Checking...'}
+                    {pathStatus === 'available' && 'Available'}
+                    {pathStatus === 'taken' && 'Already used'}
+                    {pathStatus === 'reserved' && 'Reserved'}
+                  </span>
+                </div>
+                <div className="preview-url">
+                  https://hrimajin.id/{sanitizeDirectPath(directPath) || 'your-path'}
+                </div>
+                <span className={`error-message ${errors.directPath ? 'visible' : ''}`}>
+                  {errors.directPath || 'Path wajib diisi saat Direct Link aktif.'}
+                </span>
+              </div>
+            )}
 
             <div className="input-group">
               <label>Image</label>
@@ -1148,11 +1326,34 @@ function AddCardModal({
           position: relative;
         }
 
+        .label-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 8px;
+        }
+
         .input-group label {
           font-size: 13px;
           font-weight: 500;
           color: var(--text-muted);
           margin-left: 2px;
+        }
+
+        .toggle {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 12px;
+          color: var(--text-muted);
+          cursor: pointer;
+          user-select: none;
+        }
+
+        .toggle input {
+          accent-color: var(--accent-primary);
+          width: 16px;
+          height: 16px;
         }
 
         input[type="text"],
@@ -1199,6 +1400,35 @@ function AddCardModal({
           transition: all 0.2s ease;
           margin-left: 2px;
           overflow: hidden;
+        }
+
+        .helper-text {
+          font-size: 12px;
+          color: var(--text-muted);
+          margin-left: 2px;
+        }
+
+        .helper-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 10px;
+          flex-wrap: wrap;
+        }
+
+        .status {
+          font-size: 12px;
+          color: #a5f3fc;
+        }
+
+        .preview-url {
+          font-size: 13px;
+          color: #e5e7eb;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px dashed var(--input-border);
+          border-radius: var(--radius-input);
+          padding: 10px 12px;
+          word-break: break-all;
         }
 
         .error-message.visible {
