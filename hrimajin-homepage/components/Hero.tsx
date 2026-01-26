@@ -20,6 +20,7 @@ type CardData = {
   imageSrc: string;
   directLinkEnabled?: boolean;
   directPath?: string | null;
+  hidden?: boolean;
 };
 
 export default function Hero() {
@@ -165,9 +166,13 @@ export default function Hero() {
   const rotatingWords = ['Platform', 'System', 'Services'];
 
   const cardsWithAddButton = useMemo(() => {
+    const visibleCards = isAuthenticated && isEditMode
+      ? cards
+      : cards.filter((card) => !card.hidden);
+
     if (isAuthenticated && isEditMode) {
       return [
-        ...cards,
+        ...visibleCards,
         {
           id: 'add-card',
           title: 'Add new',
@@ -176,7 +181,7 @@ export default function Hero() {
         },
       ];
     }
-    return cards;
+    return visibleCards;
   }, [cards, isAuthenticated, isEditMode]);
 
   const handleSubmitNewCard = async (payload: Omit<CardData, 'id'>) => {
@@ -190,6 +195,7 @@ export default function Hero() {
           imageDataUrl: payload.imageSrc,
           directLinkEnabled: payload.directLinkEnabled ?? false,
           directPath: payload.directPath ?? null,
+          hidden: payload.hidden ?? false,
         }),
       });
 
@@ -220,6 +226,7 @@ export default function Hero() {
           imageDataUrl: payload.imageSrc,
           directLinkEnabled: payload.directLinkEnabled ?? false,
           directPath: payload.directPath ?? null,
+          hidden: payload.hidden ?? false,
         }),
       });
 
@@ -776,6 +783,7 @@ function AddCardModal({
   const [directLinkEnabled, setDirectLinkEnabled] = useState(false);
   const [directPath, setDirectPath] = useState('');
   const [pathStatus, setPathStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'reserved' | 'invalid'>('idle');
+  const [hidden, setHidden] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
   const [uploadTone, setUploadTone] = useState<'light' | 'dark' | null>(null);
@@ -794,6 +802,7 @@ function AddCardModal({
       setDirectLinkEnabled(Boolean(initialCard?.directLinkEnabled));
       setDirectPath(initialCard?.directPath ?? '');
       setPathStatus('idle');
+      setHidden(Boolean(initialCard?.hidden));
       setImageFile(null);
       setImagePreview(initialCard?.imageSrc ?? '');
       setUploadTone(null);
@@ -984,6 +993,7 @@ function AddCardModal({
     setUploadTone(null);
     setDirectLinkEnabled(Boolean(initialCard?.directLinkEnabled));
     setDirectPath(initialCard?.directPath ?? '');
+    setHidden(Boolean(initialCard?.hidden));
     setPathStatus('idle');
     setErrors({ title: '', link: '', image: '', directPath: '' });
     onClose();
@@ -1018,6 +1028,7 @@ function AddCardModal({
         imageSrc: dataUrl,
         directLinkEnabled,
         directPath: directLinkEnabled ? normalizedPath : undefined,
+        hidden,
       });
     } finally {
       setIsSubmitting(false);
@@ -1164,6 +1175,29 @@ function AddCardModal({
                 </span>
               </div>
             )}
+
+            <div className="input-group">
+              <div className="label-row">
+                <label>Visibility</label>
+                <div className="toggle-wrapper">
+                  <span>Hide card</span>
+                  <div className="toggle-switch">
+                    <input
+                      className="toggle-input"
+                      id="hideCardToggle"
+                      type="checkbox"
+                      checked={hidden}
+                      onChange={(e) => setHidden(e.target.checked)}
+                      disabled={isSubmitting}
+                    />
+                    <label className="toggle-label" htmlFor="hideCardToggle" />
+                  </div>
+                </div>
+              </div>
+              <span className="helper-text">
+                When ON, this card is hidden from users. Admins can still edit it.
+              </span>
+            </div>
 
             <div className="input-group">
               <label>Image</label>

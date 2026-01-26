@@ -9,6 +9,7 @@ type CardRow = {
   image_url: string | null;
   direct_link_enabled?: boolean;
   direct_path?: string | null;
+  hidden?: boolean;
   created_at?: string;
 };
 
@@ -71,7 +72,7 @@ export async function GET() {
   try {
     const { data, error } = await supabaseServer
       .from('cards')
-      .select('id,title,link,image_url,direct_link_enabled,direct_path')
+      .select('id,title,link,image_url,direct_link_enabled,direct_path,hidden')
       .order('created_at', { ascending: true });
 
     if (error) {
@@ -90,6 +91,7 @@ export async function GET() {
       imageSrc: row.image_url ?? '',
       directLinkEnabled: Boolean(row.direct_link_enabled),
       directPath: row.direct_path ?? null,
+      hidden: Boolean(row.hidden),
     }));
 
     return NextResponse.json({ cards }, { status: 200 });
@@ -107,6 +109,7 @@ export async function POST(request: Request) {
       imageDataUrl,
       directLinkEnabled = false,
       directPath,
+      hidden = false,
     } = await request.json();
 
     if (!title || !link || !imageDataUrl) {
@@ -160,8 +163,9 @@ export async function POST(request: Request) {
         image_url: imageUrl,
         direct_link_enabled: Boolean(directLinkEnabled),
         direct_path: directLinkEnabled ? normalizedPath : null,
+        hidden: Boolean(hidden),
       })
-      .select('id,title,link,image_url,direct_link_enabled,direct_path')
+      .select('id,title,link,image_url,direct_link_enabled,direct_path,hidden')
       .single();
 
     if (error || !inserted) {
@@ -178,6 +182,7 @@ export async function POST(request: Request) {
           imageSrc: inserted.image_url ?? '',
           directLinkEnabled: Boolean(inserted.direct_link_enabled),
           directPath: inserted.direct_path ?? null,
+          hidden: Boolean(inserted.hidden),
         },
       },
       { status: 201 },
@@ -197,6 +202,7 @@ export async function PUT(request: Request) {
       imageDataUrl,
       directLinkEnabled = false,
       directPath,
+      hidden = false,
     } = await request.json();
 
     if (!id || !title || !link) {
@@ -251,6 +257,7 @@ export async function PUT(request: Request) {
       link: String(link).trim(),
       direct_link_enabled: Boolean(directLinkEnabled),
       direct_path: directLinkEnabled ? normalizedPath : null,
+      hidden: Boolean(hidden),
     };
 
     if (imageUrl) {
@@ -261,7 +268,7 @@ export async function PUT(request: Request) {
       .from('cards')
       .update(updatePayload)
       .eq('id', id)
-      .select('id,title,link,image_url,direct_link_enabled,direct_path')
+      .select('id,title,link,image_url,direct_link_enabled,direct_path,hidden')
       .single();
 
     if (error || !updated) {
@@ -278,6 +285,7 @@ export async function PUT(request: Request) {
           imageSrc: updated.image_url ?? '',
           directLinkEnabled: Boolean(updated.direct_link_enabled),
           directPath: updated.direct_path ?? null,
+          hidden: Boolean(updated.hidden),
         },
       },
       { status: 200 },
