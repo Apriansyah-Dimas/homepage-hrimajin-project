@@ -1122,7 +1122,7 @@ function AddCardModal({
               />
               <span className="helper-text">
                 {directLinkEnabled
-                  ? 'Target URL penuh (contoh: link Google Spreadsheet).'
+                  ? 'Target URL.'
                   : 'Link biasa akan dibuka langsung.'}
               </span>
               <span className={`error-message ${errors.link ? 'visible' : ''}`}>
@@ -1194,9 +1194,7 @@ function AddCardModal({
                   </div>
                 </div>
               </div>
-              <span className="helper-text">
-                When ON, this card is hidden from users. Admins can still edit it.
-              </span>
+              <span className="helper-text" />
             </div>
 
             <div className="input-group">
