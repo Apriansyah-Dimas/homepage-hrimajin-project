@@ -1072,23 +1072,28 @@ function AddCardModal({
             <div className="input-group">
               <div className="label-row">
                 <label htmlFor="cardLink">Link</label>
-                <label className="toggle">
-                  <input
-                    type="checkbox"
-                    checked={directLinkEnabled}
-                    onChange={(e) => {
-                      const next = e.target.checked;
-                      setDirectLinkEnabled(next);
-                      if (!next) {
-                        setDirectPath('');
-                        setPathStatus('idle');
-                        setErrors((prev) => ({ ...prev, directPath: '' }));
-                      }
-                    }}
-                    disabled={isSubmitting}
-                  />
+                <div className="toggle-wrapper">
                   <span>Direct Link</span>
-                </label>
+                  <div className="toggle-switch">
+                    <input
+                      className="toggle-input"
+                      id="directLinkToggle"
+                      type="checkbox"
+                      checked={directLinkEnabled}
+                      onChange={(e) => {
+                        const next = e.target.checked;
+                        setDirectLinkEnabled(next);
+                        if (!next) {
+                          setDirectPath('');
+                          setPathStatus('idle');
+                          setErrors((prev) => ({ ...prev, directPath: '' }));
+                        }
+                      }}
+                      disabled={isSubmitting}
+                    />
+                    <label className="toggle-label" htmlFor="directLinkToggle" />
+                  </div>
+                </div>
               </div>
               <input
                 id="cardLink"
@@ -1340,20 +1345,72 @@ function AddCardModal({
           margin-left: 2px;
         }
 
-        .toggle {
+        .toggle-wrapper {
           display: inline-flex;
           align-items: center;
-          gap: 6px;
+          gap: 10px;
           font-size: 12px;
           color: var(--text-muted);
-          cursor: pointer;
           user-select: none;
         }
 
-        .toggle input {
-          accent-color: var(--accent-primary);
-          width: 16px;
-          height: 16px;
+        .toggle-switch {
+          position: relative;
+          width: 52px;
+          height: 28px;
+          flex-shrink: 0;
+        }
+
+        .toggle-input {
+          opacity: 0;
+          width: 0;
+          height: 0;
+          position: absolute;
+        }
+
+        .toggle-label {
+          position: absolute;
+          cursor: pointer;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: #3a3a46;
+          transition: background-color 0.3s ease, box-shadow 0.3s ease;
+          border-radius: 999px;
+          box-shadow: inset 0 0 0 1px #4b4b55;
+        }
+
+        .toggle-label:before {
+          position: absolute;
+          content: '';
+          height: 22px;
+          width: 22px;
+          left: 3px;
+          top: 3px;
+          background-color: #fff;
+          border-radius: 50%;
+          transition: transform 0.3s ease;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+        }
+
+        .toggle-input:checked + .toggle-label {
+          background-color: #6365b9;
+          box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+        }
+
+        .toggle-input:checked + .toggle-label:before {
+          transform: translateX(24px);
+        }
+
+        .toggle-input:focus-visible + .toggle-label {
+          outline: 2px solid #6365b9;
+          outline-offset: 3px;
+        }
+
+        .toggle-input:disabled + .toggle-label {
+          cursor: not-allowed;
+          opacity: 0.5;
         }
 
         input[type="text"],
