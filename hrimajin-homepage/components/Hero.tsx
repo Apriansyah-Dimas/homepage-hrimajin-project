@@ -166,7 +166,7 @@ export default function Hero() {
   const rotatingWords = ['Platform', 'System', 'Services'];
 
   const cardsWithAddButton = useMemo(() => {
-    const visibleCards = isAuthenticated && isEditMode
+    const visibleCards = isEditMode
       ? cards
       : cards.filter((card) => !card.hidden);
 
