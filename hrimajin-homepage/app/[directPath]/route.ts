@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { supabaseServer } from '@/lib/supabaseClient';
 
 const RESERVED_PATHS = new Set([
@@ -16,8 +16,12 @@ const RESERVED_PATHS = new Set([
   'sitemap.xml',
 ]);
 
-export async function GET(_request: Request, { params }: { params: { directPath: string } }) {
-  const slug = (params.directPath || '').toLowerCase();
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ directPath: string }> },
+) {
+  const resolved = await params;
+  const slug = (resolved.directPath || '').toLowerCase();
   if (!slug || RESERVED_PATHS.has(slug)) {
     return NextResponse.next();
   }
