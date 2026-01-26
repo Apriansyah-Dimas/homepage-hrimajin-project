@@ -4,6 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Hrimajin.id - Homepage",
   description: "Selamat datang di home page hrimajin.id!",
+  icons: { icon: "/favicon.png" },
 };
 
 export default function RootLayout({
