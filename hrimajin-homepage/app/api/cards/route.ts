@@ -29,15 +29,15 @@ const RESERVED_PATHS = [
 ];
 
 const sanitizeDirectPath = (value?: string | null) =>
-  (value ?? '').trim().replace(/^\/+/, '').toLowerCase();
+  (value ?? '').trim().replace(/^\/+/, '');
 
 const validateDirectPath = (path: string, enabled: boolean) => {
   if (!enabled) return { error: '' };
   if (!path) return { error: 'Path wajib diisi.' };
-  if (!/^[a-z0-9_-]{2,60}$/.test(path)) {
-    return { error: 'Gunakan huruf kecil, angka, - atau _, 2-60 karakter.' };
+  if (!/^[A-Za-z0-9_-]{2,60}$/.test(path)) {
+    return { error: 'Gunakan huruf/angka, - atau _, 2-60 karakter.' };
   }
-  if (RESERVED_PATHS.includes(path)) {
+  if (RESERVED_PATHS.includes(path.toLowerCase())) {
     return { error: 'Path ini ter-reserve sistem.' };
   }
   return { error: '' };
@@ -47,7 +47,7 @@ async function assertDirectPathAvailable(path: string, excludeId?: string) {
   const { data, error } = await supabaseServer
     .from('cards')
     .select('id')
-    .eq('direct_path', path)
+    .ilike('direct_path', path)
     .limit(1);
 
   if (error) {

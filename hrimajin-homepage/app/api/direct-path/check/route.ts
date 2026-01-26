@@ -17,14 +17,14 @@ const RESERVED_PATHS = [
 ];
 
 const sanitizeDirectPath = (value?: string | null) =>
-  (value ?? '').trim().replace(/^\/+/, '').toLowerCase();
+  (value ?? '').trim().replace(/^\/+/, '');
 
 const validateDirectPath = (path: string) => {
   if (!path) return { error: 'Path wajib diisi.' };
-  if (!/^[a-z0-9_-]{2,60}$/.test(path)) {
-    return { error: 'Gunakan huruf kecil, angka, - atau _, 2-60 karakter.' };
+  if (!/^[A-Za-z0-9_-]{2,60}$/.test(path)) {
+    return { error: 'Gunakan huruf/angka, - atau _, 2-60 karakter.' };
   }
-  if (RESERVED_PATHS.includes(path)) {
+  if (RESERVED_PATHS.includes(path.toLowerCase())) {
     return { error: 'Path ini ter-reserve sistem.' };
   }
   return { error: '' };
@@ -47,7 +47,7 @@ export async function GET(request: Request) {
   const { data, error } = await supabaseServer
     .from('cards')
     .select('id')
-    .eq('direct_path', slug)
+    .ilike('direct_path', slug)
     .limit(1);
 
   if (error) {

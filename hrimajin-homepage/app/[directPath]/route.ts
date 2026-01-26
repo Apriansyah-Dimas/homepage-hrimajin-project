@@ -21,15 +21,15 @@ export async function GET(
   { params }: { params: Promise<{ directPath: string }> },
 ) {
   const resolved = await params;
-  const slug = (resolved.directPath || '').toLowerCase();
-  if (!slug || RESERVED_PATHS.has(slug)) {
+  const slug = resolved.directPath || '';
+  if (!slug || RESERVED_PATHS.has(slug.toLowerCase())) {
     return NextResponse.next();
   }
 
   const { data, error } = await supabaseServer
     .from('cards')
     .select('link,direct_link_enabled')
-    .eq('direct_path', slug)
+    .ilike('direct_path', slug)
     .limit(1)
     .single();
 

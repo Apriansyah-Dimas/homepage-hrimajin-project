@@ -895,16 +895,16 @@ function AddCardModal({
   ];
 
   const sanitizeDirectPath = (value: string) =>
-    value.trim().replace(/^\/+/, '').toLowerCase();
+    value.trim().replace(/^\/+/, '');
 
   const validateDirectPath = (value: string, enabled: boolean) => {
     if (!enabled) return '';
     const slug = sanitizeDirectPath(value);
     if (!slug) return 'Path wajib diisi.';
-    if (!/^[a-z0-9_-]{2,60}$/.test(slug)) {
-      return 'Gunakan huruf kecil, angka, - atau _, 2-60 karakter.';
+    if (!/^[A-Za-z0-9_-]{2,60}$/.test(slug)) {
+      return 'Gunakan huruf/angka, - atau _, 2-60 karakter.';
     }
-    if (RESERVED_PATHS.includes(slug)) {
+    if (RESERVED_PATHS.includes(slug.toLowerCase())) {
       return 'Path ini ter-reserve sistem.';
     }
     return '';
@@ -1135,13 +1135,13 @@ function AddCardModal({
                     if (errors.directPath) setErrors((prev) => ({ ...prev, directPath: '' }));
                   }}
                 onBlur={() => {
-                  const normalized = sanitizeDirectPath(directPath);
-                  setDirectPath(normalized);
-                  setErrors((prev) => ({
-                    ...prev,
-                    directPath: validateDirectPath(normalized, true),
-                  }));
-                }}
+                    const normalized = sanitizeDirectPath(directPath);
+                    setDirectPath(normalized);
+                    setErrors((prev) => ({
+                      ...prev,
+                      directPath: validateDirectPath(normalized, true),
+                    }));
+                  }}
                   className={errors.directPath ? 'input-error' : ''}
                   disabled={isSubmitting}
                 />
