@@ -631,39 +631,32 @@ export default function Hero() {
           border-radius: 100px;
         }
         .edit-toggle.r .edit-toggle-knobs::before {
-          content: 'ON';
+          content: 'OFF';
           position: absolute;
-          top: 4px;
-          left: 4px;
-          width: 24px;
-          height: 12px;
+          top: 5px;
+          left: 5px;
+          width: 26px;
+          height: 26px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           color: #fff;
           font-size: 10px;
           font-weight: 700;
-          text-align: center;
-          line-height: 1;
-          padding: 8px 6px;
-          background-color: #6365b9;
-          border-radius: 999px;
-          transition: 0.3s ease all, left 0.3s cubic-bezier(0.18, 0.89, 0.35, 1.15);
-          box-shadow: 0 8px 16px rgba(99, 101, 185, 0.35);
-        }
-        .edit-toggle-checkbox:active + .edit-toggle-knobs::before {
-          width: 46px;
-          border-radius: 100px;
-        }
-        .edit-toggle-checkbox:checked:active + .edit-toggle-knobs::before {
-          margin-left: -26px;
+          background-color: #454555;
+          border-radius: 50%;
+          transition: 0.25s ease all, left 0.25s cubic-bezier(0.18, 0.89, 0.35, 1.15);
+          box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
         }
         .edit-toggle-checkbox:checked + .edit-toggle-knobs::before {
-          content: 'OFF';
-          left: 42px;
-          background-color: #f44336;
-          box-shadow: 0 8px 16px rgba(244, 67, 54, 0.35);
+          content: 'ON';
+          left: 43px;
+          background-color: #6365b9;
+          box-shadow: 0 8px 16px rgba(99, 101, 185, 0.35);
         }
         .edit-toggle-checkbox:checked ~ .edit-toggle-layer {
-          background-color: #3a1111;
-          border-color: #f44336;
+          background-color: #26283a;
+          border-color: #6365b9;
         }
         .edit-toggle-checkbox:focus-visible + .edit-toggle-knobs::before {
           outline: 2px solid #ffffff66;
