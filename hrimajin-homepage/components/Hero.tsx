@@ -558,16 +558,19 @@ export default function Hero() {
           <div className="rounded-full bg-white/5 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#8a8cd1] border border-white/10">
             Edit Mode
           </div>
-          <button
-            className={`rounded-full border border-white/10 px-3 py-2 text-sm font-semibold transition ${
-              isEditMode
-                ? 'bg-[#6365b9] text-white shadow-lg shadow-[#6365b9]/40 hover:bg-[#4a4c91]'
-                : 'bg-white/5 text-white hover:bg-white/10'
-            }`}
-            onClick={() => setIsEditMode((prev) => !prev)}
-          >
-            {isEditMode ? 'On' : 'Off'}
-          </button>
+          <div className="edit-toggle-button-cover">
+            <div className="edit-toggle r">
+              <input
+                type="checkbox"
+                className="edit-toggle-checkbox"
+                checked={isEditMode}
+                onChange={() => setIsEditMode((prev) => !prev)}
+                aria-label="Toggle edit mode"
+              />
+              <div className="edit-toggle-knobs" />
+              <div className="edit-toggle-layer" />
+            </div>
+          </div>
         </div>
       )}
 
@@ -581,6 +584,92 @@ export default function Hero() {
         onSubmitEdit={(payload) => (editingCard ? handleUpdateCard(editingCard.id, payload) : handleSubmitNewCard(payload))}
         initialCard={editingCard}
       />
+
+      <style jsx>{`
+        .edit-toggle-button-cover {
+          position: relative;
+          width: 74px;
+          height: 36px;
+        }
+        .edit-toggle,
+        .edit-toggle-layer,
+        .edit-toggle-knobs {
+          position: absolute;
+          top: 0;
+          right: 0;
+          bottom: 0;
+          left: 0;
+        }
+        .edit-toggle {
+          margin: 0;
+          width: 74px;
+          height: 36px;
+          border-radius: 100px;
+          overflow: hidden;
+        }
+        .edit-toggle-checkbox {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          margin: 0;
+          opacity: 0;
+          cursor: pointer;
+          z-index: 3;
+        }
+        .edit-toggle-knobs {
+          z-index: 2;
+        }
+        .edit-toggle-layer {
+          width: 100%;
+          background-color: #222330;
+          border: 1px solid #3a3b4a;
+          border-radius: 100px;
+          transition: 0.3s ease all;
+          z-index: 1;
+        }
+        .edit-toggle.r .edit-toggle-layer {
+          border-radius: 100px;
+        }
+        .edit-toggle.r .edit-toggle-knobs::before {
+          content: 'ON';
+          position: absolute;
+          top: 4px;
+          left: 4px;
+          width: 24px;
+          height: 12px;
+          color: #fff;
+          font-size: 10px;
+          font-weight: 700;
+          text-align: center;
+          line-height: 1;
+          padding: 8px 6px;
+          background-color: #6365b9;
+          border-radius: 999px;
+          transition: 0.3s ease all, left 0.3s cubic-bezier(0.18, 0.89, 0.35, 1.15);
+          box-shadow: 0 8px 16px rgba(99, 101, 185, 0.35);
+        }
+        .edit-toggle-checkbox:active + .edit-toggle-knobs::before {
+          width: 46px;
+          border-radius: 100px;
+        }
+        .edit-toggle-checkbox:checked:active + .edit-toggle-knobs::before {
+          margin-left: -26px;
+        }
+        .edit-toggle-checkbox:checked + .edit-toggle-knobs::before {
+          content: 'OFF';
+          left: 42px;
+          background-color: #f44336;
+          box-shadow: 0 8px 16px rgba(244, 67, 54, 0.35);
+        }
+        .edit-toggle-checkbox:checked ~ .edit-toggle-layer {
+          background-color: #3a1111;
+          border-color: #f44336;
+        }
+        .edit-toggle-checkbox:focus-visible + .edit-toggle-knobs::before {
+          outline: 2px solid #ffffff66;
+          outline-offset: 3px;
+        }
+      `}</style>
     </>
   );
 }
