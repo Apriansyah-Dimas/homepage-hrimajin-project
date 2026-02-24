@@ -342,7 +342,7 @@ export default function Hero() {
         </div>
 
         <div className="relative z-10 mt-12">
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-3 shadow-[0_18px_50px_rgba(0,0,0,0.35)] backdrop-blur-xl max-h-[65vh] min-h-[320px] overflow-y-auto overscroll-contain">
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-3 shadow-[0_18px_50px_rgba(0,0,0,0.35)] backdrop-blur-xl overflow-visible">
             <NavigationCardsContent
               cards={cardsWithAddButton}
               isAuthenticated={isAuthenticated}
@@ -818,6 +818,10 @@ function NavigationCardsContent({
             className="cards-rail-scroll overflow-x-visible xl:overflow-x-auto overflow-y-hidden xl:snap-x xl:snap-mandatory"
             onWheel={handleDesktopWheel}
             onScroll={updateDesktopScrollState}
+            style={{
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+            }}
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-none xl:grid-flow-col xl:auto-cols-[240px] gap-8 w-full xl:w-max mx-auto place-items-stretch justify-items-center xl:pr-4">
               {cards.map((card, idx) =>
