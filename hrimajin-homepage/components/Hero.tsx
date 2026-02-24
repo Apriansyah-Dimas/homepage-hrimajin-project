@@ -864,7 +864,7 @@ function NavigationCardsContent({
 
           <div
             ref={desktopRailRef}
-            className="cards-rail-scroll overflow-x-visible xl:overflow-x-auto overflow-y-hidden xl:snap-x xl:snap-mandatory"
+            className="cards-rail-scroll overflow-x-visible xl:overflow-x-auto overflow-y-visible xl:snap-x xl:snap-mandatory"
             onWheel={handleDesktopWheel}
             onScroll={updateDesktopScrollState}
             style={{
@@ -872,7 +872,7 @@ function NavigationCardsContent({
               msOverflowStyle: 'none',
             }}
           >
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-none xl:grid-flow-col xl:auto-cols-[240px] gap-8 w-full xl:w-max mx-auto place-items-stretch justify-items-center xl:pr-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-none xl:grid-flow-col xl:auto-cols-[240px] gap-8 w-full xl:w-max mx-auto place-items-stretch justify-items-center py-4 xl:py-6 xl:px-3 xl:pr-7">
               {cards.map((card, idx) =>
                 card.id === 'add-card' ? (
                   <AddCardTile
@@ -921,7 +921,7 @@ function Card({ title, link, imageSrc, index, onEdit, onDelete, isEditable }: Ca
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-50px' }}
       transition={{ delay: index * 0.1, duration: 0.6 }}
-      className="w-full h-full max-w-[360px] sm:max-w-[420px] lg:max-w-[520px] xl:w-[240px] xl:min-w-[240px] xl:max-w-[240px] xl:snap-start"
+      className="relative z-0 w-full h-full max-w-[360px] sm:max-w-[420px] lg:max-w-[520px] xl:w-[240px] xl:min-w-[240px] xl:max-w-[240px] xl:snap-start hover:z-30"
     >
       <div className="relative">
         {isEditable && onEdit && (
@@ -995,7 +995,7 @@ function AddCardTile({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-50px' }}
       transition={{ delay: index * 0.1, duration: 0.6 }}
-      className="w-full h-full max-w-[360px] sm:max-w-[420px] lg:max-w-[520px] xl:w-[240px] xl:min-w-[240px] xl:max-w-[240px] xl:snap-start"
+      className="relative z-0 w-full h-full max-w-[360px] sm:max-w-[420px] lg:max-w-[520px] xl:w-[240px] xl:min-w-[240px] xl:max-w-[240px] xl:snap-start hover:z-30"
       >
             <button
         onClick={onClick}
