@@ -706,8 +706,8 @@ function NavigationCardsContent({
         </h2>
       </motion.div>
 
-      {/* Cards grid - mobile stacked, desktop single row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-none xl:grid-flow-col xl:auto-cols-[minmax(200px,1fr)] gap-8 w-full max-w-[1500px] mx-auto place-items-stretch justify-items-center">
+      {/* Cards grid - max 4 columns on desktop, wraps to next row when full */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-8 w-full max-w-[1500px] mx-auto place-items-stretch justify-items-center">
         {cards.map((card, idx) =>
           card.id === 'add-card' ? (
             <AddCardTile
