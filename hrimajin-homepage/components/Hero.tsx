@@ -781,17 +781,22 @@ function NavigationCardsContent({
             className={`pointer-events-none absolute inset-y-0 left-0 z-10 hidden xl:block w-28 transition-opacity duration-200 ${
               canScrollLeft ? 'opacity-100' : 'opacity-0'
             }`}
+            style={{
+              width: '10rem',
+              WebkitMaskImage: 'linear-gradient(to right, black 0%, black 45%, transparent 100%)',
+              maskImage: 'linear-gradient(to right, black 0%, black 45%, transparent 100%)',
+            }}
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a]/50 via-[#0a0a0a]/20 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a]/58 via-[#0a0a0a]/22 to-transparent" />
             <GradualBlur
               target="parent"
               position="left"
-              height="7rem"
-              strength={1.7}
-              divCount={8}
+              height="10rem"
+              strength={1.35}
+              divCount={12}
               curve="bezier"
               exponential
-              opacity={0.95}
+              opacity={0.9}
             />
           </div>
 
@@ -799,17 +804,22 @@ function NavigationCardsContent({
             className={`pointer-events-none absolute inset-y-0 right-0 z-10 hidden xl:block w-32 transition-opacity duration-200 ${
               canScrollRight ? 'opacity-100' : 'opacity-0'
             }`}
+            style={{
+              width: '10rem',
+              WebkitMaskImage: 'linear-gradient(to left, black 0%, black 45%, transparent 100%)',
+              maskImage: 'linear-gradient(to left, black 0%, black 45%, transparent 100%)',
+            }}
           >
-            <div className="absolute inset-0 bg-gradient-to-l from-[#0a0a0a]/60 via-[#0a0a0a]/25 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-l from-[#0a0a0a]/58 via-[#0a0a0a]/22 to-transparent" />
             <GradualBlur
               target="parent"
               position="right"
-              height="8rem"
-              strength={2.1}
-              divCount={10}
+              height="10rem"
+              strength={1.35}
+              divCount={12}
               curve="bezier"
               exponential
-              opacity={1}
+              opacity={0.9}
             />
           </div>
 
@@ -902,26 +912,28 @@ function Card({ title, link, imageSrc, index, onEdit, onDelete, isEditable }: Ca
           </div>
         )}
         <a href={link} className="block cursor-target">
-          <TiltedCard
-            imageSrc={imageSrc}
-            altText={title}
-            containerHeight="260px"
-            containerWidth="100%"
-            imageHeight="260px"
-            imageWidth="100%"
-            rotateAmplitude={12}
-            scaleOnHover={1.08}
-            showMobileWarning={false}
-            showTooltip={false}
-            displayOverlayContent={true}
-            overlayContent={
-              <div className="tilted-card-overlay-content">
-                <span className="tilted-card-title leading-tight">
-                  {titleText}
-                </span>
-              </div>
-            }
-          />
+          <div className="w-full aspect-[3/4]">
+            <TiltedCard
+              imageSrc={imageSrc}
+              altText={title}
+              containerHeight="100%"
+              containerWidth="100%"
+              imageHeight="100%"
+              imageWidth="100%"
+              rotateAmplitude={12}
+              scaleOnHover={1.08}
+              showMobileWarning={false}
+              showTooltip={false}
+              displayOverlayContent={true}
+              overlayContent={
+                <div className="tilted-card-overlay-content">
+                  <span className="tilted-card-title leading-tight">
+                    {titleText}
+                  </span>
+                </div>
+              }
+            />
+          </div>
         </a>
       </div>
     </motion.div>
@@ -945,10 +957,10 @@ function AddCardTile({
       viewport={{ once: true, margin: '-50px' }}
       transition={{ delay: index * 0.1, duration: 0.6 }}
       className="w-full h-full max-w-[360px] sm:max-w-[420px] lg:max-w-[520px] xl:w-[240px] xl:min-w-[240px] xl:max-w-[240px] xl:snap-start"
-    >
+      >
             <button
         onClick={onClick}
-        className="group relative flex h-[260px] w-full items-center justify-center overflow-hidden rounded-3xl border border-white/15 bg-white/5 text-white shadow-[0_14px_50px_rgba(0,0,0,0.45)] backdrop-blur-xl transition hover:-translate-y-1 hover:border-[#6365b9]/70 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-[#6365b9]/60"
+        className="group relative flex aspect-[3/4] h-auto w-full items-center justify-center overflow-hidden rounded-3xl border border-white/15 bg-white/5 text-white shadow-[0_14px_50px_rgba(0,0,0,0.45)] backdrop-blur-xl transition hover:-translate-y-1 hover:border-[#6365b9]/70 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-[#6365b9]/60"
       >
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(99,101,185,0.12),transparent_40%),radial-gradient(circle_at_70%_70%,rgba(138,140,209,0.12),transparent_40%),linear-gradient(135deg,rgba(255,255,255,0.05),rgba(99,101,185,0.08))]" />
         <div className="relative z-10 flex flex-col items-center gap-3">
