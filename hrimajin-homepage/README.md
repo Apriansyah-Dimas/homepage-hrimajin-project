@@ -54,3 +54,10 @@ Database table `cards` (Postgres):
 Storage:
 - Create bucket `cards` with public read.
 - Route `/api/cards` uploads to `cards/{uuid}.ext` using service role key.
+
+
+i think Laptop/PC tanpa RAM tidak bisa boot ke BIOS/Windows. Yang terjadi biasanya:
+layar hitam,
+kipas nyala,
+lalu bunyi beep / lampu indikator berkedip pola tertentu (kode error “no RAM”).
+Umumnya motherboard punya proteksi: saat RAM tidak ada, sistem berhenti di tahap awal.
