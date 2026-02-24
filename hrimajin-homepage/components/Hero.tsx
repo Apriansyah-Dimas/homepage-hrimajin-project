@@ -743,6 +743,17 @@ function NavigationCardsContent({
     });
   };
 
+  const scrollDesktopRailBy = (direction: 'left' | 'right') => {
+    const el = desktopRailRef.current;
+    if (!el) return;
+
+    const step = DESKTOP_CARD_WIDTH + DESKTOP_CARD_GAP;
+    el.scrollBy({
+      left: direction === 'right' ? step : -step,
+      behavior: 'smooth',
+    });
+  };
+
   return (
     <div className="flex flex-col items-center gap-12">
       {/* Section title */}
@@ -777,6 +788,34 @@ function NavigationCardsContent({
             } as CSSProperties
           }
         >
+          <button
+            type="button"
+            aria-label="Scroll cards left"
+            onClick={() => scrollDesktopRailBy('left')}
+            disabled={!canScrollLeft}
+            className={`absolute left-2 top-1/2 z-20 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-black/45 text-white backdrop-blur-md transition xl:flex ${
+              canScrollLeft
+                ? 'opacity-100 hover:bg-black/60 hover:border-white/25'
+                : 'opacity-0 pointer-events-none'
+            }`}
+          >
+            <span className="text-lg leading-none">‹</span>
+          </button>
+
+          <button
+            type="button"
+            aria-label="Scroll cards right"
+            onClick={() => scrollDesktopRailBy('right')}
+            disabled={!canScrollRight}
+            className={`absolute right-2 top-1/2 z-20 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-black/45 text-white backdrop-blur-md transition xl:flex ${
+              canScrollRight
+                ? 'opacity-100 hover:bg-black/60 hover:border-white/25'
+                : 'opacity-0 pointer-events-none'
+            }`}
+          >
+            <span className="text-lg leading-none">›</span>
+          </button>
+
           <div
             className={`pointer-events-none absolute inset-y-0 left-0 z-10 hidden xl:block w-28 transition-opacity duration-200 ${
               canScrollLeft ? 'opacity-100' : 'opacity-0'
