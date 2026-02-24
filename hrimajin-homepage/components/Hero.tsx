@@ -6,7 +6,15 @@ import {
   useMotionValueEvent,
   useTransform,
 } from 'framer-motion';
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type FormEvent,
+  type WheelEvent as ReactWheelEvent,
+} from 'react';
 import TiltedCard from './TiltedCard';
 import RotatingText from './RotatingText';
 
@@ -586,6 +594,14 @@ export default function Hero() {
       />
 
       <style jsx>{`
+        .cards-rail-scroll {
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+          scroll-behavior: smooth;
+        }
+        .cards-rail-scroll::-webkit-scrollbar {
+          display: none;
+        }
         .edit-toggle-button-cover {
           position: relative;
           width: 74px;
@@ -683,6 +699,49 @@ function NavigationCardsContent({
   onEditCard: (card: CardData) => void;
   onDeleteCard: (card: CardData) => void;
 }) {
+  const desktopRailRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const DESKTOP_CARD_WIDTH = 240;
+  const DESKTOP_CARD_GAP = 32;
+  const DESKTOP_PEEK_WIDTH = 120;
+  const fullyVisibleCount = Math.min(cards.length, 4);
+  const hasDesktopOverflow = cards.length > 4;
+  const desktopViewportMaxWidth =
+    fullyVisibleCount * DESKTOP_CARD_WIDTH +
+    Math.max(fullyVisibleCount - 1, 0) * DESKTOP_CARD_GAP +
+    (hasDesktopOverflow ? DESKTOP_PEEK_WIDTH : 0);
+
+  const updateDesktopScrollState = () => {
+    const el = desktopRailRef.current;
+    if (!el) return;
+    const maxScroll = Math.max(el.scrollWidth - el.clientWidth, 0);
+    setCanScrollLeft(el.scrollLeft > 2);
+    setCanScrollRight(el.scrollLeft < maxScroll - 2);
+  };
+
+  useEffect(() => {
+    updateDesktopScrollState();
+    const onResize = () => updateDesktopScrollState();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [cards.length]);
+
+  const handleDesktopWheel = (event: ReactWheelEvent<HTMLDivElement>) => {
+    const el = event.currentTarget;
+    if (el.scrollWidth <= el.clientWidth) return;
+    if (Math.abs(event.deltaY) < Math.abs(event.deltaX)) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    el.scrollBy({
+      left: event.deltaY * 1.15,
+      behavior: 'auto',
+    });
+  };
+
   return (
     <div className="flex flex-col items-center gap-12">
       {/* Section title */}
@@ -706,29 +765,64 @@ function NavigationCardsContent({
         </h2>
       </motion.div>
 
-      {/* Cards grid - max 4 columns on desktop, wraps to next row when full */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-8 w-full max-w-[1500px] mx-auto place-items-stretch justify-items-center">
-        {cards.map((card, idx) =>
-          card.id === 'add-card' ? (
-            <AddCardTile
-              key={card.id}
-              index={idx}
-              isVisible={isAuthenticated && isEditMode}
-              onClick={onOpenAddModal}
-            />
-          ) : (
-            <Card
-              key={card.id}
-              title={card.title}
-              link={card.link}
-              imageSrc={card.imageSrc}
-              index={idx}
-              onEdit={() => onEditCard(card)}
-              onDelete={() => onDeleteCard(card)}
-              isEditable={isAuthenticated && isEditMode}
-            />
-          ),
-        )}
+      {/* Desktop: horizontal rail (4 visible + blurred peek), Mobile/Tablet: regular grid */}
+      <div className="w-full max-w-[1500px] mx-auto">
+        <div
+          className="relative mx-auto max-w-full xl:max-w-[var(--cards-rail-max-width)]"
+          style={
+            {
+              '--cards-rail-max-width':
+                desktopViewportMaxWidth > 0 ? `${desktopViewportMaxWidth}px` : '100%',
+            } as CSSProperties
+          }
+        >
+          <div
+            className={`pointer-events-none absolute inset-y-0 left-0 z-10 hidden xl:block w-28 transition-opacity duration-200 ${
+              canScrollLeft ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            <div className="h-full w-full bg-gradient-to-r from-[#0a0a0a]/65 via-[#0a0a0a]/35 to-transparent backdrop-blur-md" />
+          </div>
+
+          <div
+            className={`pointer-events-none absolute inset-y-0 right-0 z-10 hidden xl:block w-32 transition-opacity duration-200 ${
+              canScrollRight ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            <div className="h-full w-full bg-gradient-to-l from-[#0a0a0a]/75 via-[#0a0a0a]/40 to-transparent backdrop-blur-md" />
+          </div>
+
+          <div
+            ref={desktopRailRef}
+            className="cards-rail-scroll overflow-x-visible xl:overflow-x-auto overflow-y-hidden xl:snap-x xl:snap-mandatory"
+            onWheel={handleDesktopWheel}
+            onScroll={updateDesktopScrollState}
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-none xl:grid-flow-col xl:auto-cols-[240px] gap-8 w-full xl:w-max mx-auto place-items-stretch justify-items-center xl:pr-4">
+              {cards.map((card, idx) =>
+                card.id === 'add-card' ? (
+                  <AddCardTile
+                    key={card.id}
+                    index={idx}
+                    isVisible={isAuthenticated && isEditMode}
+                    onClick={onOpenAddModal}
+                  />
+                ) : (
+                  <Card
+                    key={card.id}
+                    title={card.title}
+                    link={card.link}
+                    imageSrc={card.imageSrc}
+                    index={idx}
+                    onEdit={() => onEditCard(card)}
+                    onDelete={() => onDeleteCard(card)}
+                    isEditable={isAuthenticated && isEditMode}
+                  />
+                ),
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -753,7 +847,7 @@ function Card({ title, link, imageSrc, index, onEdit, onDelete, isEditable }: Ca
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-50px' }}
       transition={{ delay: index * 0.1, duration: 0.6 }}
-      className="w-full h-full max-w-[360px] sm:max-w-[420px] lg:max-w-[520px] xl:max-w-none xl:min-w-[200px]"
+      className="w-full h-full max-w-[360px] sm:max-w-[420px] lg:max-w-[520px] xl:w-[240px] xl:min-w-[240px] xl:max-w-[240px] xl:snap-start"
     >
       <div className="relative">
         {isEditable && onEdit && (
@@ -825,7 +919,7 @@ function AddCardTile({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-50px' }}
       transition={{ delay: index * 0.1, duration: 0.6 }}
-      className="w-full h-full max-w-[360px] sm:max-w-[420px] lg:max-w-[520px] xl:max-w-none xl:min-w-[200px]"
+      className="w-full h-full max-w-[360px] sm:max-w-[420px] lg:max-w-[520px] xl:w-[240px] xl:min-w-[240px] xl:max-w-[240px] xl:snap-start"
     >
             <button
         onClick={onClick}
