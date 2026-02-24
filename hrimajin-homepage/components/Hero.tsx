@@ -17,6 +17,7 @@ import {
 } from 'react';
 import TiltedCard from './TiltedCard';
 import RotatingText from './RotatingText';
+import GradualBlur from './GradualBlur';
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
@@ -781,7 +782,17 @@ function NavigationCardsContent({
               canScrollLeft ? 'opacity-100' : 'opacity-0'
             }`}
           >
-            <div className="h-full w-full bg-gradient-to-r from-[#0a0a0a]/65 via-[#0a0a0a]/35 to-transparent backdrop-blur-md" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a]/50 via-[#0a0a0a]/20 to-transparent" />
+            <GradualBlur
+              target="parent"
+              position="left"
+              height="7rem"
+              strength={1.7}
+              divCount={8}
+              curve="bezier"
+              exponential
+              opacity={0.95}
+            />
           </div>
 
           <div
@@ -789,7 +800,17 @@ function NavigationCardsContent({
               canScrollRight ? 'opacity-100' : 'opacity-0'
             }`}
           >
-            <div className="h-full w-full bg-gradient-to-l from-[#0a0a0a]/75 via-[#0a0a0a]/40 to-transparent backdrop-blur-md" />
+            <div className="absolute inset-0 bg-gradient-to-l from-[#0a0a0a]/60 via-[#0a0a0a]/25 to-transparent" />
+            <GradualBlur
+              target="parent"
+              position="right"
+              height="8rem"
+              strength={2.1}
+              divCount={10}
+              curve="bezier"
+              exponential
+              opacity={1}
+            />
           </div>
 
           <div
