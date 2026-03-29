@@ -35,10 +35,10 @@ export default function Background() {
     window.addEventListener('resize', resizeCanvas);
 
     const gridSize = 50;
-    const primaryColor = { r: 65, g: 105, b: 225 }; // royal blue - lebih gelap untuk kontras dengan alice blue
+    const primaryColor = { r: 0, g: 0, b: 0 }; // hitam untuk kontras dengan background putih
 
     const drawGrid = () => {
-      ctx.fillStyle = '#F0F8FF';
+      ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       const lineWidth = 0.5;
@@ -88,7 +88,7 @@ export default function Background() {
       <canvas
         ref={canvasRef}
         className="fixed inset-0 w-full h-full pointer-events-none z-0"
-        style={{ opacity: 0.6 }}
+        style={{ opacity: 1 }}
       />
     )
   );
