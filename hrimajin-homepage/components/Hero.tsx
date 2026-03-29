@@ -292,7 +292,7 @@ export default function Hero() {
                     className="inline-block"
                     style={{
                       background:
-                        'linear-gradient(135deg, #ededed 0%, #6365b9 50%, #8a8cd1 100%)',
+                        'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
                       backgroundClip: 'text',
@@ -310,7 +310,7 @@ export default function Hero() {
                     className="inline-block"
                     style={{
                       background:
-                        'linear-gradient(135deg, #ededed 0%, #6365b9 50%, #8a8cd1 100%)',
+                        'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
                       backgroundClip: 'text',
@@ -442,7 +442,7 @@ export default function Hero() {
                     }}
                     style={{
                       background:
-                        'linear-gradient(135deg, #ededed 0%, #6365b9 50%, #8a8cd1 100%)',
+                        'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
                       backgroundClip: 'text',
@@ -475,7 +475,7 @@ export default function Hero() {
                     }}
                     style={{
                       background:
-                        'linear-gradient(135deg, #ededed 0%, #6365b9 50%, #8a8cd1 100%)',
+                        'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
                       backgroundClip: 'text',
