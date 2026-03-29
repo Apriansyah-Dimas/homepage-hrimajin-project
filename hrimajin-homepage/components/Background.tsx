@@ -35,10 +35,10 @@ export default function Background() {
     window.addEventListener('resize', resizeCanvas);
 
     const gridSize = 50;
-    const primaryColor = { r: 99, g: 101, b: 185 }; // #6365b9
+    const primaryColor = { r: 65, g: 105, b: 225 }; // royal blue - lebih gelap untuk kontras dengan alice blue
 
     const drawGrid = () => {
-      ctx.fillStyle = '#0a0a0a';
+      ctx.fillStyle = '#F0F8FF';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       const lineWidth = 0.5;
