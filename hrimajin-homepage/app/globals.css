@@ -74,10 +74,10 @@ body {
   color: var(--btn-color);
   font-size: 13px;
   font-weight: 750;
-  background-color: transparent;
+  background-color: #FFFFFF;
   outline: none;
   border: none;
-  transition: color 0.5s;
+  transition: color 0.5s, background-color 0.2s;
   cursor: pointer;
   border-radius: 22px;
   text-decoration: none;
@@ -108,7 +108,8 @@ body {
 }
 
 .login-blob-btn:hover {
-  color: #ffffff;
+  background-color: rgba(99, 101, 185, 0.1);
+  color: var(--btn-color);
   border-radius: 22px;
 }
 
