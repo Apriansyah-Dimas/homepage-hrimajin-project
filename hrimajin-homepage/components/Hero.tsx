@@ -280,11 +280,11 @@ export default function Hero() {
     return (
       <section
         ref={sectionRef}
-        className="relative w-full min-w-[375px] max-w-[520px] mx-auto px-4 py-12 sm:py-16"
+        className="relative w-full max-w-[640px] mx-auto px-4 py-10 sm:py-14"
       >
         <div className="relative z-10 max-w-5xl w-full mx-auto px-2 sm:px-4 text-left flex justify-center">
           <div className="inline-flex flex-col items-start gap-3">
-            <h1 className="text-4xl sm:text-5xl font-bold leading-tight flex flex-col gap-2 text-left">
+            <h1 className="text-3xl sm:text-5xl font-bold leading-tight flex flex-col gap-2 text-left">
               <span>
                 {lineOneWords.map((word, index) => (
                   <span
@@ -345,6 +345,7 @@ export default function Hero() {
           <div className="rounded-2xl border border-white/10 bg-white/5 p-3 shadow-[0_18px_50px_rgba(0,0,0,0.35)] backdrop-blur-xl overflow-visible">
             <NavigationCardsContent
               cards={cardsWithAddButton}
+              isMobileView
               isAuthenticated={isAuthenticated}
               isEditMode={isEditMode}
               onEditCard={(card) => {
@@ -524,6 +525,7 @@ export default function Hero() {
           <div className="w-fit mx-auto">
           <NavigationCardsContent
             cards={cardsWithAddButton}
+            isMobileView={false}
             isAuthenticated={isAuthenticated}
             isEditMode={isEditMode}
             onEditCard={(card) => {
@@ -687,6 +689,7 @@ export default function Hero() {
 // Extract cards content as separate component
 function NavigationCardsContent({
   cards,
+  isMobileView = false,
   isAuthenticated,
   isEditMode,
   onOpenAddModal,
@@ -694,6 +697,7 @@ function NavigationCardsContent({
   onDeleteCard,
 }: {
   cards: CardData[];
+  isMobileView?: boolean;
   isAuthenticated: boolean;
   isEditMode: boolean;
   onOpenAddModal: () => void;
@@ -755,7 +759,7 @@ function NavigationCardsContent({
   };
 
   return (
-    <div className="flex flex-col items-center gap-12">
+    <div className={`flex flex-col items-center ${isMobileView ? 'gap-8' : 'gap-12'}`}>
       {/* Section title */}
       <motion.div
         className="text-center overflow-visible"
@@ -765,7 +769,7 @@ function NavigationCardsContent({
         transition={{ duration: 0.8 }}
       >
         <h2
-          className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight pb-1"
+          className={`${isMobileView ? 'text-2xl sm:text-3xl' : 'text-3xl sm:text-4xl md:text-5xl'} font-bold leading-tight pb-1`}
           style={{
             background: 'linear-gradient(135deg, #ededed 0%, #6365b9 100%)',
             WebkitBackgroundClip: 'text',
@@ -780,7 +784,7 @@ function NavigationCardsContent({
       {/* Desktop: horizontal rail (4 visible + blurred peek), Mobile/Tablet: regular grid */}
       <div className="w-full max-w-[1500px] mx-auto">
         <div
-          className="relative mx-auto max-w-full xl:max-w-[var(--cards-rail-max-width)]"
+          className={`relative mx-auto max-w-full ${isMobileView ? '' : 'xl:max-w-[var(--cards-rail-max-width)]'}`}
           style={
             {
               '--cards-rail-max-width':
@@ -864,15 +868,25 @@ function NavigationCardsContent({
 
           <div
             ref={desktopRailRef}
-            className="cards-rail-scroll overflow-x-visible xl:overflow-x-auto overflow-y-visible xl:snap-x xl:snap-mandatory"
-            onWheel={handleDesktopWheel}
+            className={`cards-rail-scroll overflow-y-visible ${
+              isMobileView
+                ? 'overflow-x-auto snap-x snap-mandatory'
+                : 'overflow-x-visible xl:overflow-x-auto xl:snap-x xl:snap-mandatory'
+            }`}
+            onWheel={isMobileView ? undefined : handleDesktopWheel}
             onScroll={updateDesktopScrollState}
             style={{
               scrollbarWidth: 'none',
               msOverflowStyle: 'none',
             }}
           >
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-none xl:grid-flow-col xl:auto-cols-[240px] gap-8 w-full xl:w-max mx-auto place-items-stretch justify-items-center py-4 xl:py-6 xl:px-3 xl:pr-7">
+            <div
+              className={`grid gap-6 sm:gap-8 mx-auto place-items-stretch justify-items-center py-4 ${
+                isMobileView
+                  ? 'grid-cols-none grid-flow-col auto-cols-[82%] sm:auto-cols-[46%] w-max px-1'
+                  : 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-none xl:grid-flow-col xl:auto-cols-[240px] w-full xl:w-max xl:px-3 xl:pr-7 xl:py-6'
+              }`}
+            >
               {cards.map((card, idx) =>
                 card.id === 'add-card' ? (
                   <AddCardTile
