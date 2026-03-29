@@ -243,23 +243,23 @@ export default function LoginPage() {
       </svg>
 
       <style jsx global>{`
-        :root {
-          --bg-color: #0a0a0a;
-          --card-bg: rgba(255, 255, 255, 0.02);
-          --card-border: rgba(255, 255, 255, 0.08);
-          --accent-primary: #6365b9;
-          --accent-hover: #7577c4;
-          --accent-focus-ring: rgba(99, 101, 185, 0.4);
-          --text-main: #ffffff;
-          --text-muted: #a1a1aa;
-          --text-error: #f87171;
-          --input-bg: #141414;
-          --input-border: #27272a;
-          --input-border-hover: #3f3f46;
-          --radius-card: 16px;
-          --radius-input: 8px;
-          --shadow-card: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
-        }
+:root {
+  --bg-color: #FFFFFF;
+  --card-bg: rgba(0, 0, 0, 0.02);
+  --card-border: rgba(0, 0, 0, 0.08);
+  --accent-primary: #6365b9;
+  --accent-hover: #7577c4;
+  --accent-focus-ring: rgba(99, 101, 185, 0.4);
+  --text-main: #0a0a0a;
+  --text-muted: #666666;
+  --text-error: #d32f2f;
+  --input-bg: #f8f9fa;
+  --input-border: #ced4da;
+  --input-border-hover: #adb5bd;
+  --radius-card: 16px;
+  --radius-input: 8px;
+  --shadow-card: 0 10px 40px -10px rgba(0, 0, 0, 0.15);
+}
 
         .login-page {
           min-height: 100vh;
@@ -412,37 +412,39 @@ export default function LoginPage() {
           align-items: center;
         }
 
-        button[type='submit'] {
-          flex: 1;
-          background-color: var(--accent-primary);
-          color: white;
-          border: none;
-          border-radius: var(--radius-input);
-          padding: 12px;
-          font-size: 15px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-        }
+button[type='submit'] {
+  flex: 1;
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  border: 2px solid var(--accent-primary);
+  border-radius: var(--radius-input);
+  padding: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
 
-        button[type='submit']:hover {
-          background-color: var(--accent-hover);
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(99, 101, 185, 0.3);
-        }
+button[type='submit']:hover {
+  background-color: rgba(255, 255, 255, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(99, 101, 185, 0.15);
+  border-color: var(--accent-hover);
+}
 
-        button[type='submit']:active {
-          transform: translateY(0);
-        }
+button[type='submit']:active {
+  transform: translateY(0);
+}
 
-        button[type='submit']:disabled {
-          opacity: 0.7;
-          cursor: not-allowed;
-        }
+button[type='submit']:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  border-color: var(--input-border);
+}
 
         .footer {
           text-align: center;

@@ -1530,23 +1530,23 @@ function AddCardModal({
       </div>
 
       <style jsx>{`
-        :global(:root) {
-          --bg-color: #0a0a0a;
-          --card-bg: #111119;
-          --card-border: #1f1f29;
-          --accent-primary: #6365b9;
-          --accent-hover: #7577c4;
-          --accent-focus-ring: rgba(99, 101, 185, 0.4);
-          --text-main: #ffffff;
-          --text-muted: #a1a1aa;
-          --text-error: #f87171;
-          --input-bg: #141414;
-          --input-border: #27272a;
-          --input-border-hover: #3f3f46;
-          --radius-card: 16px;
-          --radius-input: 8px;
-          --shadow-card: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
-        }
+:global(:root) {
+  --bg-color: #FFFFFF;
+  --card-bg: rgba(0, 0, 0, 0.02);
+  --card-border: rgba(0, 0, 0, 0.08);
+  --accent-primary: #6365b9;
+  --accent-hover: #7577c4;
+  --accent-focus-ring: rgba(99, 101, 185, 0.4);
+  --text-main: #0a0a0a;
+  --text-muted: #666666;
+  --text-error: #d32f2f;
+  --input-bg: #f8f9fa;
+  --input-border: #ced4da;
+  --input-border-hover: #adb5bd;
+  --radius-card: 16px;
+  --radius-input: 8px;
+  --shadow-card: 0 10px 40px -10px rgba(0, 0, 0, 0.15);
+}
 
         .create-card-backdrop {
           position: fixed;
