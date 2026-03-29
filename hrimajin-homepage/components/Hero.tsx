@@ -334,6 +334,11 @@ export default function Hero() {
                     splitLevelClassName="overflow-hidden"
                     elementLevelClassName="font-bold"
                     transition={{ type: 'spring', damping: 30, stiffness: 400 }}
+                    styles={[
+                      {},
+                      {},
+                      { color: '#6365b9' }
+                    ]}
                   />
                 </span>
               </span>
@@ -504,6 +509,11 @@ export default function Hero() {
                     splitLevelClassName="overflow-hidden"
                     elementLevelClassName="font-bold"
                     transition={{ type: 'spring', damping: 30, stiffness: 400 }}
+                    styles={[
+                      {},
+                      {},
+                      { color: '#6365b9' }
+                    ]}
                   />
                 </motion.span>
               </span>
