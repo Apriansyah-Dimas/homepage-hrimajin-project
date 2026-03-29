@@ -332,13 +332,8 @@ export default function Hero() {
                     exit={{ y: '-120%', opacity: 0 }}
                     mainClassName="inline-flex items-center"
                     splitLevelClassName="overflow-hidden"
-                    elementLevelClassName="font-bold"
+                    elementLevelClassName="font-bold text-[#6365b9]"
                     transition={{ type: 'spring', damping: 30, stiffness: 400 }}
-                    styles={[
-                      {},
-                      {},
-                      { color: '#6365b9' }
-                    ]}
                   />
                 </span>
               </span>
@@ -507,13 +502,8 @@ export default function Hero() {
                     exit={{ y: '-120%', opacity: 0 }}
                     mainClassName="inline-flex items-center"
                     splitLevelClassName="overflow-hidden"
-                    elementLevelClassName="font-bold"
+                    elementLevelClassName="font-bold text-[#6365b9]"
                     transition={{ type: 'spring', damping: 30, stiffness: 400 }}
-                    styles={[
-                      {},
-                      {},
-                      { color: '#6365b9' }
-                    ]}
                   />
                 </motion.span>
               </span>
