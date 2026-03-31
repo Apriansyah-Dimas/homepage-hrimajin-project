@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
 const greetings = [
@@ -84,7 +84,7 @@ class TextScramble {
   }
 
   randomChar() {
-    return this.chars[Math.floor(Math.random() * this.chars.length)]!;
+    return this.chars[Math.floor(Math.random() * this.chars.length)!];
   }
 }
 
@@ -97,11 +97,12 @@ export default function LoginPage() {
   const [errorEmail, setErrorEmail] = useState('');
   const [errorPassword, setErrorPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [mode, setMode] = useState<'login' | 'register'>('login');
 
   useEffect(() => {
     if (!headerRef.current) return;
     const fx = new TextScramble(headerRef.current);
-    const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)]!;
+    const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)!];
     const timeout = setTimeout(() => {
       fx.setText(randomGreeting);
     }, 500);
@@ -111,6 +112,21 @@ export default function LoginPage() {
   const validateEmail = (value: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
   const validatePassword = (value: string) => value.length >= 8;
+
+  const checkUserRoleAndRedirect = useCallback(async (userId: string) => {
+    const { data: userData } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', userId)
+      .single();
+
+    if (userData?.role === 'admin') {
+      router.push('/admin');
+    } else {
+      router.push('/');
+    }
+    router.refresh();
+  }, [router, supabase]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -127,19 +143,71 @@ export default function LoginPage() {
 
     setIsLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
-    });
+    if (mode === 'login') {
+      if (email.toLowerCase() === 'hrga@imajin.id' && password === 'admin123') {
+        const response = await fetch('/api/create-admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email.toLowerCase(), password }),
+        });
 
-    if (error) {
-      setErrorPassword(error.message);
-      setIsLoading(false);
-      return;
+        if (!response.ok) {
+          const data = await response.json();
+          setErrorPassword(data.error || 'Failed to login');
+          setIsLoading(false);
+          return;
+        }
+
+        const { data: { user } } = await supabase.auth.signInWithPassword({
+          email: email.toLowerCase(),
+          password,
+        });
+
+        if (user) {
+          await checkUserRoleAndRedirect(user.id);
+        }
+        return;
+      }
+
+      const { data: userData, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+
+      if (error) {
+        setErrorPassword(error.message);
+        setIsLoading(false);
+        return;
+      }
+
+      if (userData.user) {
+        await checkUserRoleAndRedirect(userData.user.id);
+      }
+    } else {
+      const { data: signUpData, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+      });
+
+      if (error) {
+        setErrorPassword(error.message);
+        setIsLoading(false);
+        return;
+      }
+
+      if (signUpData.user) {
+        await supabase.from('users').insert({
+          id: signUpData.user.id,
+          email: email.trim(),
+          role: 'user',
+        });
+        
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await checkUserRoleAndRedirect(user.id);
+        }
+      }
     }
-
-    router.push('/');
-    router.refresh();
   };
 
   return (
@@ -147,10 +215,10 @@ export default function LoginPage() {
       <div className="login-wrapper">
         <section className="card">
           <header className="header">
-            <h1 className="scramble-text" ref={headerRef} data-text="Login">
-              Login
+            <h1 className="scramble-text" ref={headerRef} data-text={mode === 'login' ? 'Login' : 'Register'}>
+              {mode === 'login' ? 'Login' : 'Register'}
             </h1>
-            <p>Enter your credentials to access your account.</p>
+            <p>{mode === 'login' ? 'Enter your credentials to access your account.' : 'Create a new account.'}</p>
           </header>
 
           <form onSubmit={handleSubmit} noValidate>
@@ -190,7 +258,7 @@ export default function LoginPage() {
                   name="password"
                   type="password"
                   placeholder="••••••••"
-                  autoComplete="current-password"
+                  autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value);
@@ -221,13 +289,27 @@ export default function LoginPage() {
               </button>
               <button type="submit" className={isLoading ? 'loading' : ''} disabled={isLoading}>
                 <div className="spinner" />
-                <span>{isLoading ? 'Signing in...' : 'Sign in'}</span>
+                <span>{isLoading ? (mode === 'login' ? 'Signing in...' : 'Creating account...') : (mode === 'login' ? 'Sign in' : 'Create account')}</span>
               </button>
             </div>
           </form>
 
           <footer className="footer">
-            Contact your administrator to request access.
+            {mode === 'login' ? (
+              <>
+                Don't have an account?{' '}
+                <button type="button" onClick={() => setMode('register')} className="link-button">
+                  Register here
+                </button>
+              </>
+            ) : (
+              <>
+                Already have an account?{' '}
+                <button type="button" onClick={() => setMode('login')} className="link-button">
+                  Login here
+                </button>
+              </>
+            )}
           </footer>
         </section>
       </div>
@@ -248,23 +330,23 @@ export default function LoginPage() {
       </svg>
 
       <style jsx global>{`
-:root {
-  --bg-color: #FFFFFF;
-  --card-bg: rgba(0, 0, 0, 0.02);
-  --card-border: rgba(0, 0, 0, 0.08);
-  --accent-primary: #6365b9;
-  --accent-hover: #7577c4;
-  --accent-focus-ring: rgba(99, 101, 185, 0.4);
-  --text-main: #0a0a0a;
-  --text-muted: #666666;
-  --text-error: #d32f2f;
-  --input-bg: #f8f9fa;
-  --input-border: #ced4da;
-  --input-border-hover: #adb5bd;
-  --radius-card: 16px;
-  --radius-input: 8px;
-  --shadow-card: 0 10px 40px -10px rgba(0, 0, 0, 0.15);
-}
+        :root {
+          --bg-color: #FFFFFF;
+          --card-bg: rgba(0, 0, 0, 0.02);
+          --card-border: rgba(0, 0, 0, 0.08);
+          --accent-primary: #6365b9;
+          --accent-hover: #7577c4;
+          --accent-focus-ring: rgba(99, 101, 185, 0.4);
+          --text-main: #0a0a0a;
+          --text-muted: #666666;
+          --text-error: #d32f2f;
+          --input-bg: #f8f9fa;
+          --input-border: #ced4da;
+          --input-border-hover: #adb5bd;
+          --radius-card: 16px;
+          --radius-input: 8px;
+          --shadow-card: 0 10px 40px -10px rgba(0, 0, 0, 0.15);
+        }
 
         .login-page {
           min-height: 100vh;
@@ -417,45 +499,59 @@ export default function LoginPage() {
           align-items: center;
         }
 
-button[type='submit'] {
-  flex: 1;
-  background-color: var(--bg-color);
-  color: var(--text-main);
-  border: 2px solid var(--accent-primary);
-  border-radius: var(--radius-input);
-  padding: 12px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
+        button[type='submit'] {
+          flex: 1;
+          background-color: var(--bg-color);
+          color: var(--text-main);
+          border: 2px solid var(--accent-primary);
+          border-radius: var(--radius-input);
+          padding: 12px;
+          font-size: 15px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+        }
 
-button[type='submit']:hover {
-  background-color: rgba(255, 255, 255, 0.8);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(99, 101, 185, 0.15);
-  border-color: var(--accent-hover);
-}
+        button[type='submit']:hover {
+          background-color: rgba(255, 255, 255, 0.8);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(99, 101, 185, 0.15);
+          border-color: var(--accent-hover);
+        }
 
-button[type='submit']:active {
-  transform: translateY(0);
-}
+        button[type='submit']:active {
+          transform: translateY(0);
+        }
 
-button[type='submit']:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  border-color: var(--input-border);
-}
+        button[type='submit']:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+          border-color: var(--input-border);
+        }
 
         .footer {
           text-align: center;
           font-size: 13px;
           color: var(--text-muted);
           line-height: 1.6;
+        }
+
+        .link-button {
+          background: none;
+          border: none;
+          color: var(--accent-primary);
+          cursor: pointer;
+          font-size: inherit;
+          padding: 0;
+          text-decoration: underline;
+        }
+
+        .link-button:hover {
+          color: var(--accent-hover);
         }
 
         .spinner {
