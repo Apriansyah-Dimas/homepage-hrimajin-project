@@ -35,8 +35,6 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  const isDev = process.env.NODE_ENV === 'development';
-
   if (pathname.startsWith('/admin')) {
     if (!user) {
       const url = request.nextUrl.clone();
@@ -44,29 +42,15 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    const adminEmails = process.env.ADMIN_EMAILS?.split(',') || [];
-    const userEmail = user.email?.toLowerCase() || '';
-    const isAdminEmail = adminEmails.some(email => userEmail.includes(email.toLowerCase()));
+    const { data: userData } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .single();
 
-    if (isDev || isAdminEmail) {
-      return supabaseResponse;
-    }
-
-    try {
-      const { data: userData } = await supabase
-        .from('users')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-      if (!userData || userData.role !== 'admin') {
-        const url = request.nextUrl.clone();
-        url.pathname = '/';
-        return NextResponse.redirect(url);
-      }
-    } catch {
+    if (!userData || userData.role !== 'admin') {
       const url = request.nextUrl.clone();
-      url.pathname = '/login';
+      url.pathname = '/';
       return NextResponse.redirect(url);
     }
   }
