@@ -2,8 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-
-const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123';
+import { createClient } from '@/lib/supabase/client';
 
 const greetings = [
   'Good to see you',
@@ -91,6 +90,7 @@ class TextScramble {
 
 export default function LoginPage() {
   const router = useRouter();
+  const supabase = createClient();
   const headerRef = useRef<HTMLHeadingElement>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -126,15 +126,20 @@ export default function LoginPage() {
     if (!emailValid || !passwordValid) return;
 
     setIsLoading(true);
-    setTimeout(() => {
-      if (password === ADMIN_PASSWORD) {
-        window.localStorage.setItem('hr_admin', 'true');
-        router.push('/');
-      } else {
-        setErrorPassword('Password salah.');
-      }
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+
+    if (error) {
+      setErrorPassword(error.message);
       setIsLoading(false);
-    }, 500);
+      return;
+    }
+
+    router.push('/');
+    router.refresh();
   };
 
   return (
