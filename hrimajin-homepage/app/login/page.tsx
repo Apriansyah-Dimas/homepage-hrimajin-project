@@ -112,7 +112,7 @@ export default function LoginPage() {
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
   const validatePassword = (value: string) => value.length >= 8;
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (isLoading) return;
     setErrorEmail('');
